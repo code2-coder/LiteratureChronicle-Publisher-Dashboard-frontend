@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dashboard.literaturechronicle.com/sitemap.xml

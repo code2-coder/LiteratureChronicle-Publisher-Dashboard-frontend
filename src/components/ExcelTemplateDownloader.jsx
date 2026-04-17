@@ -22,11 +22,11 @@ const ExcelTemplateDownloader = () => {
     setDownloading(true);
     try {
       if (templateType === 'sales') {
-        const response = await apiClient.get('/sales');
+        const response = await apiClient.get('/api/sales');
         const salesData = response.data;
-        
+
         let templateData = [];
-        
+
         if (salesData.length > 0) {
           templateData = salesData.map(sale => ({
             Title: sale.title || '',
@@ -57,11 +57,11 @@ const ExcelTemplateDownloader = () => {
         XLSX.utils.book_append_sheet(wb, ws, 'Book Sales');
         XLSX.writeFile(wb, 'Current_Book_Sales.xlsx');
       } else {
-        const response = await apiClient.get('/royalties');
+        const response = await apiClient.get('/api/royalties');
         const royaltyData = response.data;
-        
+
         let templateData = [];
-        
+
         if (royaltyData.length > 0) {
           templateData = royaltyData.map(r => ({
             'Author Name': r.author_name || (r.authorId?.name) || '',
@@ -110,9 +110,9 @@ const ExcelTemplateDownloader = () => {
           </SelectContent>
         </Select>
       </div>
-      
-      <Button 
-        onClick={handleDownload} 
+
+      <Button
+        onClick={handleDownload}
         size="lg"
         disabled={downloading}
         className="w-full py-6 rounded-2xl bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg shadow-secondary/20 hover:shadow-secondary/30 hover:-translate-y-0.5 transition-all duration-300 font-bold flex items-center justify-center gap-2 group"

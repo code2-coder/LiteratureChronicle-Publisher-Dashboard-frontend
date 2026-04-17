@@ -17,15 +17,15 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
   const [parsedData, setParsedData] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [validating, setValidating] = useState(false);
-  
+
   // Success state
   const [showSuccess, setShowSuccess] = useState(false);
   const [successCount, setSuccessCount] = useState(0);
-  
+
   // Validation state
   const [validationErrors, setValidationErrors] = useState([]);
-   const [showValidationErrors, setShowValidationErrors] = useState(false);
-  
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
@@ -74,18 +74,18 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
 
   const parseCustomDate = (dateStr) => {
     if (!dateStr) return new Date();
-    
+
     // Handle Excel serial numbers
     if (typeof dateStr === 'number') {
       return new Date(Math.round((dateStr - 25569) * 86400 * 1000));
     }
 
     const str = String(dateStr).trim();
-    
+
     // Handle DD/MM/YYYY or DD-MM-YYYY
     const dmyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
     const match = str.match(dmyRegex);
-    
+
     if (match) {
       const [_, day, month, year] = match;
       const date = new Date(Date.UTC(year, month - 1, day));
@@ -100,30 +100,30 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
   const validateData = async () => {
     setValidating(true);
     const errors = [];
-    
+
     try {
       if (type === 'sales') {
         const [booksRes, platformsRes] = await Promise.all([
-          apiClient.get('/books', { params: { limit: 1000 } }),
-          apiClient.get('/platforms')
+          apiClient.get('/api/books', { params: { limit: 1000 } }),
+          apiClient.get('/api/platforms')
         ]);
         const books = booksRes.data.data || booksRes.data;
         const platforms = platformsRes.data.data || platformsRes.data;
-        
+
         if (!platforms || platforms.length === 0) {
-          toast({ 
-            title: 'Configuration Error', 
-            description: 'No platforms found in database. Please register platforms in Platform Management first.', 
-            variant: 'destructive' 
+          toast({
+            title: 'Configuration Error',
+            description: 'No platforms found in database. Please register platforms in Platform Management first.',
+            variant: 'destructive'
           });
           setValidating(false);
           return false;
         }
-        
+
         // 1. Check for duplicates within the current file
         const fileOrderIds = new Set();
         const internalDuplicates = new Set();
-        
+
         parsedData.forEach((row) => {
           const orderId = String(row['Order ID'] || row.order_id || '').trim();
           if (orderId) {
@@ -137,7 +137,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         let existingDbIds = [];
         if (orderIdsToCheck.length > 0) {
           try {
-            const dupRes = await apiClient.post('/sales/check-duplicates', { order_ids: orderIdsToCheck });
+            const dupRes = await apiClient.post('/api/sales/check-duplicates', { order_ids: orderIdsToCheck });
             existingDbIds = dupRes.data.existingIds || [];
           } catch (e) {
             console.error('Failed to check for database duplicates');
@@ -168,7 +168,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           if (existingDbIds.includes(orderId)) {
             errors.push({ row: rowNum, type: 'Security', message: `This Order ID already exists in the system (previously imported).`, provided: orderId });
           }
-          
+
           const book = books.find(b => b.isbn === isbn);
           if (!book) {
             errors.push({ row: rowNum, type: 'Not Found', message: `Book with ISBN not found in database.`, provided: isbn });
@@ -180,25 +180,25 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           }
 
           if (!pName) {
-             errors.push({ row: rowNum, type: 'Missing Data', message: 'Platform Name is required.' });
+            errors.push({ row: rowNum, type: 'Missing Data', message: 'Platform Name is required.' });
           } else {
             const platform = platforms.find(p => p.name.toLowerCase().trim() === pName.toLowerCase().trim());
             if (!platform) {
               const platformNames = platforms.map(p => p.name).join(', ');
-              errors.push({ 
-                row: rowNum, 
-                type: 'Not Found', 
-                message: `Platform not found in database. Valid platforms are: ${platformNames}`, 
-                provided: pName 
+              errors.push({
+                row: rowNum,
+                type: 'Not Found',
+                message: `Platform not found in database. Valid platforms are: ${platformNames}`,
+                provided: pName
               });
             }
           }
         });
 
       } else if (type === 'royalty') {
-        const authorsRes = await apiClient.get('/auth/authors', { params: { limit: 1000 } });
+        const authorsRes = await apiClient.get('/api/auth/authors', { params: { limit: 1000 } });
         const authors = authorsRes.data.data || authorsRes.data;
-        
+
         for (const [index, row] of parsedData.entries()) {
           const rowNum = index + 2;
           const authorName = String(row['Author Name'] || row.author_name || row.Name || row.name || '').trim();
@@ -218,11 +218,11 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
               errors.push({ row: rowNum, type: 'Not Found', message: 'Contact Number does not match any registered author.', provided: contactNumber });
             }
           }
-          
+
           if (isNaN(amount) || amount <= 0) {
             errors.push({ row: rowNum, type: 'Invalid Data', message: 'A valid Amount greater than 0 is required.' });
           }
-          
+
           if (!paymentDate) {
             errors.push({ row: rowNum, type: 'Missing Data', message: 'Payment Date is required.' });
           }
@@ -232,9 +232,9 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           if (author && (row.Status || row.status || 'paid').toLowerCase() === 'paid') {
             const balance = await calculateAuthorBalance(author._id, author.mobile_number);
             if (amount > balance) {
-              errors.push({ 
-                row: rowNum, 
-                type: 'Warning', 
+              errors.push({
+                row: rowNum,
+                type: 'Warning',
                 message: `Payment amount (₹${amount}) exceeds author's pending balance (₹${balance.toFixed(2)}).`,
                 expected: `₹${balance.toFixed(2)}`,
                 provided: `₹${amount}`
@@ -266,12 +266,12 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
     try {
       if (type === 'sales') {
         const [booksRes, platformsRes] = await Promise.all([
-          apiClient.get('/books', { params: { limit: 1000 } }),
-          apiClient.get('/platforms')
+          apiClient.get('/api/books', { params: { limit: 1000 } }),
+          apiClient.get('/api/platforms')
         ]);
         const books = booksRes.data.data || booksRes.data;
         const platforms = platformsRes.data.data || platformsRes.data;
-        
+
         const salesToUpload = parsedData.map(row => {
           const isbn = String(row.ISBN || row.isbn || '').trim();
           const pName = String(row['Platform Name'] || row.platform_name || '').trim();
@@ -293,37 +293,37 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           };
         });
 
-        const res = await apiClient.post('/sales/bulk-upload', { 
+        const res = await apiClient.post('/api/sales/bulk-upload', {
           sales: salesToUpload,
           upload_date: new Date().toISOString()
         });
         setSuccessCount(res.data.count);
         toast({ title: 'Upload Complete', description: `Successfully uploaded ${res.data.count} records.` });
       } else if (type === 'royalty') {
-        const authorsRes = await apiClient.get('/auth/authors', { params: { limit: 1000 } });
+        const authorsRes = await apiClient.get('/api/auth/authors', { params: { limit: 1000 } });
         const authors = authorsRes.data.data || authorsRes.data;
-        
-          const royaltiesToUpload = parsedData.map(row => {
-            const authorName = String(row['Author Name'] || row.author_name || row.Name || row.name || '').trim();
-            const contactNumber = String(row['Contact Number'] || row.contact_number || row['Mobile Number'] || row.mobile_number || '').trim();
-            const amount = parseFloat(row['Total Payment'] || row.Amount || row.amount || row.paid_amount || 0);
-            const paymentDate = parseCustomDate(row['Payment Date'] || row.payment_date);
-            const status = String(row.Status || row.status || 'paid').toLowerCase().trim();
-            
-            const author = authors.find(a => a.mobile_number === contactNumber);
-            
-            return {
-              authorId: author?._id,
-              author_name: authorName,
-              author_contact_number: contactNumber,
-              amount: amount,
-              paid_amount: amount,
-              payment_date: paymentDate.toISOString(),
-              status: status
-            };
-          });
 
-        const res = await apiClient.post('/royalties/bulk-upload', { 
+        const royaltiesToUpload = parsedData.map(row => {
+          const authorName = String(row['Author Name'] || row.author_name || row.Name || row.name || '').trim();
+          const contactNumber = String(row['Contact Number'] || row.contact_number || row['Mobile Number'] || row.mobile_number || '').trim();
+          const amount = parseFloat(row['Total Payment'] || row.Amount || row.amount || row.paid_amount || 0);
+          const paymentDate = parseCustomDate(row['Payment Date'] || row.payment_date);
+          const status = String(row.Status || row.status || 'paid').toLowerCase().trim();
+
+          const author = authors.find(a => a.mobile_number === contactNumber);
+
+          return {
+            authorId: author?._id,
+            author_name: authorName,
+            author_contact_number: contactNumber,
+            amount: amount,
+            paid_amount: amount,
+            payment_date: paymentDate.toISOString(),
+            status: status
+          };
+        });
+
+        const res = await apiClient.post('/api/royalties/bulk-upload', {
           royalties: royaltiesToUpload,
           upload_date: new Date().toISOString()
         });
@@ -332,8 +332,8 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
       }
 
       setShowSuccess(true);
-      setFile(null); 
-      setParsedData([]); 
+      setFile(null);
+      setParsedData([]);
       onClose();
     } catch (error) {
       toast({ title: 'Upload Failed', description: error.response?.data?.message || error.message, variant: 'destructive' });
@@ -359,15 +359,15 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
               Upload your CSV or Excel file. The system will automatically validate the data before importing.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6 mt-4">
             <div className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors ${file ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/50 hover:bg-muted/50'}`}>
-              <input 
-                ref={fileInputRef} 
-                type="file" 
-                accept=".csv,.xlsx,.xls" 
-                onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} 
-                className="hidden" 
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])}
+                className="hidden"
               />
               {file ? (
                 <div className="flex items-center justify-center gap-4">
@@ -407,9 +407,9 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {parsedData.slice(0,3).map((r,i) => (
+                      {parsedData.slice(0, 3).map((r, i) => (
                         <tr key={i} className="hover:bg-muted/30">
-                          {Object.values(r).map((v,j) => <td key={j} className="p-3">{String(v)}</td>)}
+                          {Object.values(r).map((v, j) => <td key={j} className="p-3">{String(v)}</td>)}
                         </tr>
                       ))}
                     </tbody>
@@ -423,8 +423,8 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
             <Button variant="outline" onClick={handleModalClose} disabled={uploading || validating}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleUpload} 
+            <Button
+              onClick={handleUpload}
               disabled={!file || uploading || validating || parsedData.length === 0}
               className="min-w-[140px]"
             >
@@ -440,16 +440,16 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         </DialogContent>
       </Dialog>
 
-      <ValidationErrorModal 
-        isOpen={showValidationErrors} 
-        onClose={() => setShowValidationErrors(false)} 
-        errors={validationErrors} 
+      <ValidationErrorModal
+        isOpen={showValidationErrors}
+        onClose={() => setShowValidationErrors(false)}
+        errors={validationErrors}
       />
-      
-      <UploadSuccessModal 
-        isOpen={showSuccess} 
-        onClose={() => setShowSuccess(false)} 
-        recordCount={successCount} 
+
+      <UploadSuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        recordCount={successCount}
       />
     </>
   );

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { 
+import {
   BookOpen, Wallet, TrendingUp, Loader2, RefreshCw
 } from 'lucide-react';
 import { calculateRoyalty } from '@/lib/royaltyCalculator.js';
@@ -22,28 +22,28 @@ import { calculateRoyalty } from '@/lib/royaltyCalculator.js';
 const AuthorDashboard = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  
+
   const [loadingSales, setLoadingSales] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [sales, setSales] = useState([]);
   const [payments, setPayments] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [authorProfile, setAuthorProfile] = useState(null);
-  
-  const [stats, setStats] = useState({ 
-    publishedWorks: 0, 
-    totalRoyalty: 0, 
-    paidRoyalty: 0, 
-    balanceRoyalty: 0, 
-    totalQuantitySold: 0 
+
+  const [stats, setStats] = useState({
+    publishedWorks: 0,
+    totalRoyalty: 0,
+    paidRoyalty: 0,
+    balanceRoyalty: 0,
+    totalQuantitySold: 0
   });
-  
+
   const [withdrawalModalOpen, setWithdrawalModalOpen] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [submittingWithdrawal, setSubmittingWithdrawal] = useState(false);
-  
+
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({});
   const [submittingEdit, setSubmittingEdit] = useState(false);
@@ -65,10 +65,10 @@ const AuthorDashboard = () => {
     }
   };
 
-  const formatCurrency = useCallback((amount) => 
+  const formatCurrency = useCallback((amount) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount || 0), []);
 
-  const formatDateStandard = useCallback((dateString) => 
+  const formatDateStandard = useCallback((dateString) =>
     new Date(dateString).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }), []);
 
   const formatToDDMMYYYY = useCallback((dateString) => {
@@ -83,22 +83,22 @@ const AuthorDashboard = () => {
   const loadAllData = useCallback(async (isManualRefresh = false) => {
     if (!currentUser) return;
     if (isManualRefresh) setIsRefreshing(true);
-    
+
     try {
       const [profileRes, withdrawalsRes, paymentsRes, salesRes, booksRes, platformsRes] = await Promise.allSettled([
-        apiClient.get('/auth/profile'),
-        apiClient.get('/withdrawals'),
-        apiClient.get('/royalties'),
-        apiClient.get('/sales'),
-        apiClient.get('/books'),
-        apiClient.get('/platforms')
+        apiClient.get('/api/auth/profile'),
+        apiClient.get('/api/withdrawals'),
+        apiClient.get('/api/royalties'),
+        apiClient.get('/api/sales'),
+        apiClient.get('/api/books'),
+        apiClient.get('/api/platforms')
       ]);
 
       if (profileRes.status === 'fulfilled') {
         const pData = profileRes.value.data;
         setAuthorProfile(pData.data || pData);
       }
-      
+
       if (withdrawalsRes.status === 'fulfilled') {
         const wData = withdrawalsRes.value.data;
         setWithdrawals(Array.isArray(wData.data) ? wData.data : (Array.isArray(wData) ? wData : []));
@@ -108,13 +108,13 @@ const AuthorDashboard = () => {
         const rData = paymentsRes.value.data;
         setPayments(Array.isArray(rData.data) ? rData.data : (Array.isArray(rData) ? rData : []));
       }
-      
+
       const salesRaw = salesRes.status === 'fulfilled' ? salesRes.value.data : [];
       const authorSales = Array.isArray(salesRaw.data) ? salesRaw.data : (Array.isArray(salesRaw) ? salesRaw : []);
-      
+
       const booksRaw = booksRes.status === 'fulfilled' ? booksRes.value.data : [];
       const authorBooks = Array.isArray(booksRaw.data) ? booksRaw.data : (Array.isArray(booksRaw) ? booksRaw : []);
-      
+
       const platformsRaw = platformsRes.status === 'fulfilled' ? platformsRes.value.data : [];
       const allPlatforms = Array.isArray(platformsRaw.data) ? platformsRaw.data : (Array.isArray(platformsRaw) ? platformsRaw : []);
 
@@ -138,7 +138,7 @@ const AuthorDashboard = () => {
         }
 
         return sum + calculateRoyalty(
-          sale.mrp, platformCommission, book.printing_cost || 0, 
+          sale.mrp, platformCommission, book.printing_cost || 0,
           sale.quantity || 1, book.format || 'physical'
         );
       }, 0);
@@ -185,7 +185,7 @@ const AuthorDashboard = () => {
     e.preventDefault();
     setSubmittingEdit(true);
     try {
-      await apiClient.put('/auth/profile', {
+      await apiClient.put('/api/auth/profile', {
         ...editForm,
         bank_details: {
           bank_name: editForm.bank_name,
@@ -213,7 +213,7 @@ const AuthorDashboard = () => {
     }
     setSubmittingWithdrawal(true);
     try {
-      const { data } = await apiClient.post('/withdrawals', { amount });
+      const { data } = await apiClient.post('/api/withdrawals', { amount });
       setWithdrawals(prev => [data, ...prev]);
       toast({ title: 'Request Sent' });
       setWithdrawalModalOpen(false);
@@ -230,8 +230,8 @@ const AuthorDashboard = () => {
       <Helmet><title>Author Portfolio - Literature Chronicle</title></Helmet>
       <div className="min-h-screen bg-[#fcfbf9]">
         <Header />
-        
-        <motion.div 
+
+        <motion.div
           className="container mx-auto px-4 py-12 max-w-7xl"
           initial="hidden"
           animate="visible"
@@ -244,7 +244,7 @@ const AuthorDashboard = () => {
             </div>
             <div className="flex items-center gap-4">
               <Button onClick={() => loadAllData(true)} variant="ghost" className="rounded-full hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all" disabled={isRefreshing}>
-                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} /> 
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
                 {isRefreshing ? 'Refreshing...' : 'Update Records'}
               </Button>
               <Button onClick={() => setWithdrawalModalOpen(true)} className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/10 px-8 py-6 text-lg">
@@ -254,16 +254,16 @@ const AuthorDashboard = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="flex space-x-2 mb-10 bg-primary/5 p-1.5 rounded-2xl w-fit border border-primary/10">
-            <Button 
-              variant={activeTab === 'overview' ? 'default' : 'ghost'} 
-              onClick={() => setActiveTab('overview')} 
+            <Button
+              variant={activeTab === 'overview' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('overview')}
               className={`rounded-xl px-8 py-6 ${activeTab === 'overview' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground'}`}
             >
               Analytics
             </Button>
-            <Button 
-              variant={activeTab === 'profile' ? 'default' : 'ghost'} 
-              onClick={() => setActiveTab('profile')} 
+            <Button
+              variant={activeTab === 'profile' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('profile')}
               className={`rounded-xl px-8 py-6 ${activeTab === 'profile' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground'}`}
             >
               Profile & Bank
@@ -295,7 +295,7 @@ const AuthorDashboard = () => {
                     <div className="lg:col-span-2">
                       <div className="glass-card rounded-3xl p-8 premium-shadow border-none">
                         <h2 className="text-2xl font-serif font-bold text-primary flex items-center gap-3 mb-8">
-                          <BookOpen className="h-6 w-6 text-secondary" /> 
+                          <BookOpen className="h-6 w-6 text-secondary" />
                           Sales Ledger
                         </h2>
                         {loadingSales ? (
@@ -359,18 +359,18 @@ const AuthorDashboard = () => {
           </DialogHeader>
           <form onSubmit={handleEditProfileSubmit} className="space-y-6 mt-6">
             <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Legal Name</Label><Input className="rounded-xl py-6" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} /></div>
-              <div className="space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Mobile Number</Label><Input className="rounded-xl py-6" value={editForm.mobile_number} onChange={e => setEditForm({...editForm, mobile_number: e.target.value})} /></div>
-              <div className="col-span-2 space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Primary Email</Label><Input className="rounded-xl py-6" type="email" value={editForm.email} onChange={e => setEditForm({...editForm, email: e.target.value})} /></div>
+              <div className="space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Legal Name</Label><Input className="rounded-xl py-6" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} /></div>
+              <div className="space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Mobile Number</Label><Input className="rounded-xl py-6" value={editForm.mobile_number} onChange={e => setEditForm({ ...editForm, mobile_number: e.target.value })} /></div>
+              <div className="col-span-2 space-y-2"><Label className="text-xs font-bold uppercase tracking-widest">Primary Email</Label><Input className="rounded-xl py-6" type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} /></div>
             </div>
             <div className="bg-primary/5 p-6 rounded-2xl space-y-4 border border-primary/10">
               <h4 className="font-serif font-bold text-primary flex items-center gap-2"><Wallet className="h-4 w-4" /> Settlement Coordinates</h4>
               <div className="grid grid-cols-2 gap-4">
-                <Input placeholder="Bank Name" className="rounded-xl" value={editForm.bank_name} onChange={e => setEditForm({...editForm, bank_name: e.target.value})} />
-                <Input placeholder="IFSC Code" className="rounded-xl" value={editForm.ifsc_code} onChange={e => setEditForm({...editForm, ifsc_code: e.target.value})} />
-                <Input placeholder="Holder Name" className="rounded-xl" value={editForm.account_holder} onChange={e => setEditForm({...editForm, account_holder: e.target.value})} />
-                <Input placeholder="Account Number" className="rounded-xl" value={editForm.account_number} onChange={e => setEditForm({...editForm, account_number: e.target.value})} />
-                <div className="col-span-2 text-primary"><Input placeholder="UPI Endpoint (Optional)" className="rounded-xl" value={editForm.upi} onChange={e => setEditForm({...editForm, upi: e.target.value})} /></div>
+                <Input placeholder="Bank Name" className="rounded-xl" value={editForm.bank_name} onChange={e => setEditForm({ ...editForm, bank_name: e.target.value })} />
+                <Input placeholder="IFSC Code" className="rounded-xl" value={editForm.ifsc_code} onChange={e => setEditForm({ ...editForm, ifsc_code: e.target.value })} />
+                <Input placeholder="Holder Name" className="rounded-xl" value={editForm.account_holder} onChange={e => setEditForm({ ...editForm, account_holder: e.target.value })} />
+                <Input placeholder="Account Number" className="rounded-xl" value={editForm.account_number} onChange={e => setEditForm({ ...editForm, account_number: e.target.value })} />
+                <div className="col-span-2 text-primary"><Input placeholder="UPI Endpoint (Optional)" className="rounded-xl" value={editForm.upi} onChange={e => setEditForm({ ...editForm, upi: e.target.value })} /></div>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-6"><Button variant="ghost" onClick={() => setEditProfileModalOpen(false)}>Cancel</Button><Button type="submit" className="rounded-full px-8 py-6 bg-primary shadow-xl" disabled={submittingEdit}>Save Portfolio Changes</Button></div>

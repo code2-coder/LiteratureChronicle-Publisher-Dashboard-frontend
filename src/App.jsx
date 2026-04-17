@@ -10,6 +10,7 @@ const HomePage = lazy(() => import('@/pages/HomePage.jsx'));
 const LoginPage = lazy(() => import('@/pages/LoginPage.jsx'));
 const AuthorDashboard = lazy(() => import('@/pages/AuthorDashboard.jsx'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard.jsx'));
+const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -44,6 +45,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </AuthProvider>

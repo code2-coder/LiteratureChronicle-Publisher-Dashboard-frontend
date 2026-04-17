@@ -7,9 +7,6 @@ import { readFileSync } from 'node:fs';
 
 import viteCompression from 'vite-plugin-compression';
 
-const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
-const allDeps = Object.keys(pkg.dependencies || {});
-
 const isDev = process.env.NODE_ENV !== 'production';
 
 const configHorizonsViteErrorHandler = `
@@ -320,24 +317,8 @@ export default defineConfig({
 	build: {
 		rollupOptions: {
 			output: {
-				manualChunks(id) {
-					if (id.includes('node_modules')) {
-						if (id.includes('framer-motion')) return 'vendor-motion';
-						if (id.includes('recharts')) return 'vendor-recharts';
-						if (id.includes('lucide-react')) return 'vendor-ui';
-						if (id.includes('@radix-ui')) return 'vendor-ui';
-						if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor-core';
-						if (id.includes('xlsx') || id.includes('papaparse')) return 'vendor-utl';
-						return 'vendor-others';
-					}
-				}
+				manualChunks: undefined,
 			},
-			external: [
-				'@babel/parser',
-				'@babel/traverse',
-				'@babel/generator',
-				'@babel/types'
-			]
 		}
 	}
 });

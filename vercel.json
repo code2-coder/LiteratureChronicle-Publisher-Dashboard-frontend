@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://literaturechronicle-publisher-dashboard-8yda.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "cleanUrls": true
+}

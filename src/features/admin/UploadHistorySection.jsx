@@ -36,7 +36,7 @@ const UploadHistorySection = () => {
 
   const fetchAuthorsMap = async () => {
     try {
-      const res = await apiClient.get('/auth/authors');
+      const res = await apiClient.get('/api/auth/authors');
       const users = res.data;
       const map = {};
       users.forEach(u => {
@@ -63,13 +63,13 @@ const UploadHistorySection = () => {
       };
 
       if (activeTab === 'sales') {
-        const res = await apiClient.get('/sales', { params });
+        const res = await apiClient.get('/api/sales', { params });
         setSales(res.data.data);
         setTotalPages(res.data.pages);
         setTotalItems(res.data.total);
       } else {
         await fetchAuthorsMap();
-        const res = await apiClient.get('/royalties', { params });
+        const res = await apiClient.get('/api/royalties', { params });
         setRoyaltyData(res.data.data);
         setTotalPages(res.data.pages);
         setTotalItems(res.data.total);
@@ -93,7 +93,7 @@ const UploadHistorySection = () => {
   const handleDeleteRoyalty = async (id) => {
     if (!window.confirm('Are you sure you want to delete this royalty record?')) return;
     try {
-      await apiClient.delete(`/royalties/${id}`);
+      await apiClient.delete(`/api/royalties/${id}`);
       toast({ title: 'Success', description: 'Record deleted successfully.' });
       fetchData();
     } catch (error) {
@@ -124,7 +124,7 @@ const UploadHistorySection = () => {
       const payload = { ...formData };
       if (payload.payment_date) payload.payment_date = new Date(payload.payment_date).toISOString();
 
-      await apiClient.put(`/royalties/${editingRecord._id}`, payload);
+      await apiClient.put(`/api/royalties/${editingRecord._id}`, payload);
       toast({ title: 'Success', description: 'Record updated successfully.' });
       setEditModalOpen(false);
       fetchData();
@@ -161,7 +161,7 @@ const UploadHistorySection = () => {
       const payload = { ...saleFormData };
       if (payload.order_date) payload.order_date = new Date(payload.order_date).toISOString();
 
-      await apiClient.put(`/sales/${editingSale._id}`, payload);
+      await apiClient.put(`/api/sales/${editingSale._id}`, payload);
       toast({ title: 'Success', description: 'Sale record updated successfully.' });
       setEditSaleModalOpen(false);
       fetchData();
@@ -175,7 +175,7 @@ const UploadHistorySection = () => {
   const handleDeleteSale = async (id) => {
     if (!window.confirm('Are you sure you want to delete this sales record?')) return;
     try {
-      await apiClient.delete(`/sales/${id}`);
+      await apiClient.delete(`/api/sales/${id}`);
       toast({ title: 'Success', description: 'Sale record deleted successfully.' });
       fetchData();
     } catch (error) {
@@ -226,24 +226,24 @@ const UploadHistorySection = () => {
           <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">Search Records</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
+            <Input
               placeholder={activeTab === 'sales' ? "Search title, ISBN, order ID..." : "Search author name or contact..."}
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="pl-9 h-10 bg-background" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-10 bg-background"
             />
           </div>
         </div>
-        
+
         <div className="w-[160px] space-y-1.5">
           <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">Start Date</Label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-            <Input 
+            <Input
               type="date"
-              value={startDate} 
-              onChange={(e) => setStartDate(e.target.value)} 
-              className="pl-9 h-10 bg-background" 
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="pl-9 h-10 bg-background"
             />
           </div>
         </div>
@@ -252,17 +252,17 @@ const UploadHistorySection = () => {
           <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">End Date</Label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-            <Input 
+            <Input
               type="date"
-              value={endDate} 
-              onChange={(e) => setEndDate(e.target.value)} 
-              className="pl-9 h-10 bg-background" 
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="pl-9 h-10 bg-background"
             />
           </div>
         </div>
 
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => { setSearch(''); setStartDate(''); setEndDate(''); setPage(1); }}
           className="h-10 text-xs px-3"
         >
@@ -279,13 +279,13 @@ const UploadHistorySection = () => {
           <div className="space-y-6">
             <div className="overflow-x-auto">
               {activeTab === 'sales' ? (
-                <SalesTable 
-                  sales={sales} 
-                  showRoyalty={true} 
-                  onRefresh={fetchData} 
-                  isPaginated={true} 
-                  onEdit={handleEditSaleClick} 
-                  onDelete={handleDeleteSale} 
+                <SalesTable
+                  sales={sales}
+                  showRoyalty={true}
+                  onRefresh={fetchData}
+                  isPaginated={true}
+                  onEdit={handleEditSaleClick}
+                  onDelete={handleDeleteSale}
                 />
               ) : (
                 <table className="w-full text-sm text-left">
@@ -330,10 +330,10 @@ const UploadHistorySection = () => {
                   Showing {activeTab === 'sales' ? sales.length : royaltyData.length} of {totalItems} records
                 </p>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    disabled={page === 1} 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === 1}
                     onClick={() => setPage(page - 1)}
                     className="h-8 w-8 p-0"
                   >
@@ -342,10 +342,10 @@ const UploadHistorySection = () => {
                   <span className="text-xs font-bold px-3 py-1 bg-muted rounded-md border">
                     {page} / {totalPages}
                   </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    disabled={page === totalPages} 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === totalPages}
                     onClick={() => setPage(page + 1)}
                     className="h-8 w-8 p-0"
                   >
@@ -364,10 +364,10 @@ const UploadHistorySection = () => {
             <DialogTitle className="text-xl font-bold text-primary">Edit Royalty Record</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateRoyalty} className="space-y-4 mt-4">
-            <div className="space-y-2"><Label>Contact Number</Label><Input value={formData.author_contact_number || ''} onChange={(e) => setFormData({...formData, author_contact_number: e.target.value})} required /></div>
-            <div className="space-y-2"><Label>Amount (₹)</Label><Input type="number" step="0.01" value={formData.amount || ''} onChange={(e) => setFormData({...formData, amount: e.target.value})} required /></div>
-            <div className="space-y-2"><Label>Paid Amount (₹)</Label><Input type="number" step="0.01" value={formData.paid_amount || ''} onChange={(e) => setFormData({...formData, paid_amount: e.target.value})} /></div>
-            <div className="space-y-2"><Label>Payment Date</Label><Input type="date" value={formData.payment_date || ''} onChange={(e) => setFormData({...formData, payment_date: e.target.value})} required /></div>
+            <div className="space-y-2"><Label>Contact Number</Label><Input value={formData.author_contact_number || ''} onChange={(e) => setFormData({ ...formData, author_contact_number: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Amount (₹)</Label><Input type="number" step="0.01" value={formData.amount || ''} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required /></div>
+            <div className="space-y-2"><Label>Paid Amount (₹)</Label><Input type="number" step="0.01" value={formData.paid_amount || ''} onChange={(e) => setFormData({ ...formData, paid_amount: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Payment Date</Label><Input type="date" value={formData.payment_date || ''} onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })} required /></div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
@@ -385,30 +385,30 @@ const UploadHistorySection = () => {
           <form onSubmit={handleUpdateSale} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label>MRP (₹)</Label>
-              <Input 
-                type="number" 
-                step="0.01" 
-                value={saleFormData.mrp || ''} 
-                onChange={(e) => setSaleFormData({...saleFormData, mrp: e.target.value})} 
-                required 
+              <Input
+                type="number"
+                step="0.01"
+                value={saleFormData.mrp || ''}
+                onChange={(e) => setSaleFormData({ ...saleFormData, mrp: e.target.value })}
+                required
               />
             </div>
             <div className="space-y-2">
               <Label>Quantity</Label>
-              <Input 
-                type="number" 
-                value={saleFormData.quantity || ''} 
-                onChange={(e) => setSaleFormData({...saleFormData, quantity: e.target.value})} 
-                required 
+              <Input
+                type="number"
+                value={saleFormData.quantity || ''}
+                onChange={(e) => setSaleFormData({ ...saleFormData, quantity: e.target.value })}
+                required
               />
             </div>
             <div className="space-y-2">
               <Label>Order Date</Label>
-              <Input 
-                type="date" 
-                value={saleFormData.order_date || ''} 
-                onChange={(e) => setSaleFormData({...saleFormData, order_date: e.target.value})} 
-                required 
+              <Input
+                type="date"
+                value={saleFormData.order_date || ''}
+                onChange={(e) => setSaleFormData({ ...saleFormData, order_date: e.target.value })}
+                required
               />
             </div>
             <div className="flex justify-end gap-2 pt-4">

@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Edit, Trash2, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import BalanceSheetDownloader from './BalanceSheetDownloader.jsx';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog.jsx';
+import BalanceSheetDownloader from '@/components/BalanceSheetDownloader.jsx';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog.jsx';
 import { calculateTotalRoyalty, calculatePaidRoyalty, calculateRoyalty } from '@/lib/royaltyCalculator.js';
 
 const AuthorManagementSection = () => {

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import ImageGallery from './ImageGallery';
+import ImageGallery from '@/components/ImageGallery';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {

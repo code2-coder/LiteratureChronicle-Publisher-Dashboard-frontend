@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { History, Edit, Trash2, Loader2, FileX, Calendar, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import SalesTable from './SalesTable.jsx';
+import SalesTable from '@/components/SalesTable.jsx';
 
 const UploadHistorySection = () => {
   const [activeTab, setActiveTab] = useState('sales');

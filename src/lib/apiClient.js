@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api'; // Proxy will be configured in vite.config.js
+const API_BASE_URL = import.meta.env.VITE_API_BASE || '/api'; // Use environment variable if it exists
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

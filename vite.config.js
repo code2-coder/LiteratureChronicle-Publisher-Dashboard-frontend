@@ -8,6 +8,8 @@ import iframeRouteRestorationPlugin from './plugins/vite-plugin-iframe-route-res
 
 import { readFileSync } from 'node:fs';
 
+import viteCompression from 'vite-plugin-compression';
+
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 const allDeps = Object.keys(pkg.dependencies || {});
 
@@ -284,14 +286,19 @@ logger.error = (msg, options) => {
 }
 
 export default defineConfig({
-	optimizeDeps: {
-		include: allDeps,
-	},
 	customLogger: logger,
 	plugins: [
 		...(isDev ? [inlineEditPlugin(), editModeDevPlugin(), selectionModePlugin(), iframeRouteRestorationPlugin()] : []),
 		react(),
-		addTransformIndexHtml
+		addTransformIndexHtml,
+		viteCompression({
+			algorithm: 'brotliCompress',
+			ext: '.br',
+		}),
+		viteCompression({
+			algorithm: 'gzip',
+			ext: '.gz',
+		}),
 	],
 	server: {
 		port: 3000,
@@ -315,6 +322,19 @@ export default defineConfig({
 	},
 	build: {
 		rollupOptions: {
+			output: {
+				manualChunks(id) {
+					if (id.includes('node_modules')) {
+						if (id.includes('framer-motion')) return 'vendor-motion';
+						if (id.includes('recharts')) return 'vendor-recharts';
+						if (id.includes('lucide-react')) return 'vendor-ui';
+						if (id.includes('@radix-ui')) return 'vendor-ui';
+						if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'vendor-core';
+						if (id.includes('xlsx') || id.includes('papaparse')) return 'vendor-utl';
+						return 'vendor-others';
+					}
+				}
+			},
 			external: [
 				'@babel/parser',
 				'@babel/traverse',

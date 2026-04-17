@@ -4,10 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/Header.jsx';
 import AuthorForm from '@/components/AuthorForm.jsx';
 import FileUploadModal from '@/components/FileUploadModal.jsx';
-import BookManagementSection from '@/components/BookManagementSection.jsx';
-import AuthorManagementSection from '@/components/AuthorManagementSection.jsx';
-import PlatformManagementSection from '@/components/PlatformManagementSection.jsx';
-import UploadHistorySection from '@/components/UploadHistorySection.jsx';
+const BookManagementSection = React.lazy(() => import('@/features/admin/BookManagementSection.jsx'));
+const AuthorManagementSection = React.lazy(() => import('@/features/admin/AuthorManagementSection.jsx'));
+const PlatformManagementSection = React.lazy(() => import('@/features/admin/PlatformManagementSection.jsx'));
+const UploadHistorySection = React.lazy(() => import('@/features/admin/UploadHistorySection.jsx'));
 import ExcelTemplateDownloader from '@/components/ExcelTemplateDownloader.jsx';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -165,10 +165,16 @@ const AdminDashboard = () => {
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {activeTab === 'books' && <BookManagementSection />}
-                  {activeTab === 'authors' && <AuthorManagementSection />}
-                  {activeTab === 'platforms' && <PlatformManagementSection />}
-                  {activeTab === 'history' && <UploadHistorySection />}
+                  <React.Suspense fallback={
+                    <div className="flex h-64 w-full items-center justify-center rounded-3xl bg-primary/5">
+                      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent shadow-lg"></div>
+                    </div>
+                  }>
+                    {activeTab === 'books' && <BookManagementSection />}
+                    {activeTab === 'authors' && <AuthorManagementSection />}
+                    {activeTab === 'platforms' && <PlatformManagementSection />}
+                    {activeTab === 'history' && <UploadHistorySection />}
+                  </React.Suspense>
 
                   {/* Show Templates at the bottom on mobile */}
                   <div className="mt-10 lg:hidden">

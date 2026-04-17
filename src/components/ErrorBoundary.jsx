@@ -55,7 +55,7 @@ class ErrorBoundary extends React.Component {
               Return Home
             </Button>
           </div>
-          {process.env.NODE_ENV === 'development' && (
+          {import.meta.env.DEV && (
             <div className="mt-12 max-w-2xl overflow-auto rounded-lg border bg-muted p-4 text-left font-mono text-xs text-muted-foreground">
               <p className="mb-2 font-bold text-destructive">Debug Information:</p>
               <pre>{this.state.error?.stack}</pre>

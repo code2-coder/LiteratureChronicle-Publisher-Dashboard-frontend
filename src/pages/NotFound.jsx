@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutArea } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 
 const NotFound = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
       <div className="relative mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary">
-        <LayoutArea size={48} />
+        <LayoutGrid size={48} />
         <span className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground shadow-lg">
           404
         </span>

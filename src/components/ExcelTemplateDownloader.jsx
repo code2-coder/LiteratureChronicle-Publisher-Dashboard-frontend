@@ -22,7 +22,7 @@ const ExcelTemplateDownloader = () => {
     setDownloading(true);
     try {
       if (templateType === 'sales') {
-        const response = await apiClient.get('/api/sales');
+        const response = await apiClient.get('/sales');
         const salesData = response.data;
 
         let templateData = [];
@@ -57,7 +57,7 @@ const ExcelTemplateDownloader = () => {
         XLSX.utils.book_append_sheet(wb, ws, 'Book Sales');
         XLSX.writeFile(wb, 'Current_Book_Sales.xlsx');
       } else {
-        const response = await apiClient.get('/api/royalties');
+        const response = await apiClient.get('/royalties');
         const royaltyData = response.data;
 
         let templateData = [];

@@ -28,7 +28,7 @@ export const calculateRoyalty = (mrp, platformCommissionPercentage, printingCost
 
 export const calculateTotalRoyalty = async (authorId) => {
   try {
-    const response = await apiClient.get('/api/sales', { params: { limit: 10000 } });
+    const response = await apiClient.get('/sales', { params: { limit: 10000 } });
     const sales = response.data.data || response.data;
 
     // Filter sales by authorId
@@ -53,7 +53,7 @@ export const calculateTotalRoyalty = async (authorId) => {
 
 export const calculatePaidRoyalty = async (mobileNumber) => {
   try {
-    const response = await apiClient.get('/api/royalties', { params: { limit: 10000 } });
+    const response = await apiClient.get('/royalties', { params: { limit: 10000 } });
     const records = response.data.data || response.data;
 
     // Filter by mobile number if provided (for per-author calculations)
@@ -84,7 +84,7 @@ export const calculateAuthorBalance = async (authorId, mobileNumber) => {
 
 export const calculateBalanceRoyalty = async (authorId) => {
   try {
-    const res = await apiClient.get('/api/auth/profile');
+    const res = await apiClient.get('/auth/profile');
     const user = res.data;
     return await calculateAuthorBalance(authorId, user.mobile_number);
   } catch (error) {
@@ -95,7 +95,7 @@ export const calculateBalanceRoyalty = async (authorId) => {
 
 export const calculatePublishedWorks = async (authorId) => {
   try {
-    const res = await apiClient.get('/api/books', { params: { limit: 10000 } });
+    const res = await apiClient.get('/books', { params: { limit: 10000 } });
     const books = res.data.data || res.data;
     const authorBooks = books.filter(book => book.authorId === authorId || book.authorId?._id === authorId);
     return authorBooks.length || 0;
@@ -107,7 +107,7 @@ export const calculatePublishedWorks = async (authorId) => {
 
 export const calculateTotalQuantitySold = async (authorId) => {
   try {
-    const res = await apiClient.get('/api/sales', { params: { limit: 10000 } });
+    const res = await apiClient.get('/sales', { params: { limit: 10000 } });
     const sales = res.data.data || res.data;
     const authorSales = sales.filter(sale => {
       const saleAuthorId = sale.authorId?._id || sale.authorId;

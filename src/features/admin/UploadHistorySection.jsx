@@ -36,7 +36,7 @@ const UploadHistorySection = () => {
 
   const fetchAuthorsMap = async () => {
     try {
-      const res = await apiClient.get('/api/auth/authors');
+      const res = await apiClient.get('/auth/authors');
       const users = res.data;
       const map = {};
       users.forEach(u => {
@@ -63,13 +63,13 @@ const UploadHistorySection = () => {
       };
 
       if (activeTab === 'sales') {
-        const res = await apiClient.get('/api/sales', { params });
+        const res = await apiClient.get('/sales', { params });
         setSales(res.data.data);
         setTotalPages(res.data.pages);
         setTotalItems(res.data.total);
       } else {
         await fetchAuthorsMap();
-        const res = await apiClient.get('/api/royalties', { params });
+        const res = await apiClient.get('/royalties', { params });
         setRoyaltyData(res.data.data);
         setTotalPages(res.data.pages);
         setTotalItems(res.data.total);
@@ -93,7 +93,7 @@ const UploadHistorySection = () => {
   const handleDeleteRoyalty = async (id) => {
     if (!window.confirm('Are you sure you want to delete this royalty record?')) return;
     try {
-      await apiClient.delete(`/api/royalties/${id}`);
+      await apiClient.delete(`/royalties/${id}`);
       toast({ title: 'Success', description: 'Record deleted successfully.' });
       fetchData();
     } catch (error) {
@@ -124,7 +124,7 @@ const UploadHistorySection = () => {
       const payload = { ...formData };
       if (payload.payment_date) payload.payment_date = new Date(payload.payment_date).toISOString();
 
-      await apiClient.put(`/api/royalties/${editingRecord._id}`, payload);
+      await apiClient.put(`/royalties/${editingRecord._id}`, payload);
       toast({ title: 'Success', description: 'Record updated successfully.' });
       setEditModalOpen(false);
       fetchData();
@@ -161,7 +161,7 @@ const UploadHistorySection = () => {
       const payload = { ...saleFormData };
       if (payload.order_date) payload.order_date = new Date(payload.order_date).toISOString();
 
-      await apiClient.put(`/api/sales/${editingSale._id}`, payload);
+      await apiClient.put(`/sales/${editingSale._id}`, payload);
       toast({ title: 'Success', description: 'Sale record updated successfully.' });
       setEditSaleModalOpen(false);
       fetchData();
@@ -175,7 +175,7 @@ const UploadHistorySection = () => {
   const handleDeleteSale = async (id) => {
     if (!window.confirm('Are you sure you want to delete this sales record?')) return;
     try {
-      await apiClient.delete(`/api/sales/${id}`);
+      await apiClient.delete(`/sales/${id}`);
       toast({ title: 'Success', description: 'Sale record deleted successfully.' });
       fetchData();
     } catch (error) {

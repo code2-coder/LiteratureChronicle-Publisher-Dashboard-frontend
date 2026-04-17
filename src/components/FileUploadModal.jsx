@@ -104,8 +104,8 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
     try {
       if (type === 'sales') {
         const [booksRes, platformsRes] = await Promise.all([
-          apiClient.get('/api/books', { params: { limit: 1000 } }),
-          apiClient.get('/api/platforms')
+          apiClient.get('/books', { params: { limit: 1000 } }),
+          apiClient.get('/platforms')
         ]);
         const books = booksRes.data.data || booksRes.data;
         const platforms = platformsRes.data.data || platformsRes.data;
@@ -137,7 +137,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         let existingDbIds = [];
         if (orderIdsToCheck.length > 0) {
           try {
-            const dupRes = await apiClient.post('/api/sales/check-duplicates', { order_ids: orderIdsToCheck });
+            const dupRes = await apiClient.post('/sales/check-duplicates', { order_ids: orderIdsToCheck });
             existingDbIds = dupRes.data.existingIds || [];
           } catch (e) {
             console.error('Failed to check for database duplicates');
@@ -196,7 +196,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         });
 
       } else if (type === 'royalty') {
-        const authorsRes = await apiClient.get('/api/auth/authors', { params: { limit: 1000 } });
+        const authorsRes = await apiClient.get('/auth/authors', { params: { limit: 1000 } });
         const authors = authorsRes.data.data || authorsRes.data;
 
         for (const [index, row] of parsedData.entries()) {
@@ -266,8 +266,8 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
     try {
       if (type === 'sales') {
         const [booksRes, platformsRes] = await Promise.all([
-          apiClient.get('/api/books', { params: { limit: 1000 } }),
-          apiClient.get('/api/platforms')
+          apiClient.get('/books', { params: { limit: 1000 } }),
+          apiClient.get('/platforms')
         ]);
         const books = booksRes.data.data || booksRes.data;
         const platforms = platformsRes.data.data || platformsRes.data;
@@ -293,14 +293,14 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           };
         });
 
-        const res = await apiClient.post('/api/sales/bulk-upload', {
+        const res = await apiClient.post('/sales/bulk-upload', {
           sales: salesToUpload,
           upload_date: new Date().toISOString()
         });
         setSuccessCount(res.data.count);
         toast({ title: 'Upload Complete', description: `Successfully uploaded ${res.data.count} records.` });
       } else if (type === 'royalty') {
-        const authorsRes = await apiClient.get('/api/auth/authors', { params: { limit: 1000 } });
+        const authorsRes = await apiClient.get('/auth/authors', { params: { limit: 1000 } });
         const authors = authorsRes.data.data || authorsRes.data;
 
         const royaltiesToUpload = parsedData.map(row => {
@@ -323,7 +323,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           };
         });
 
-        const res = await apiClient.post('/api/royalties/bulk-upload', {
+        const res = await apiClient.post('/royalties/bulk-upload', {
           royalties: royaltiesToUpload,
           upload_date: new Date().toISOString()
         });

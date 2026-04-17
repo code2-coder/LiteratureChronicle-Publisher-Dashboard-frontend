@@ -86,12 +86,12 @@ const AuthorDashboard = () => {
 
     try {
       const [profileRes, withdrawalsRes, paymentsRes, salesRes, booksRes, platformsRes] = await Promise.allSettled([
-        apiClient.get('/api/auth/profile'),
-        apiClient.get('/api/withdrawals'),
-        apiClient.get('/api/royalties'),
-        apiClient.get('/api/sales'),
-        apiClient.get('/api/books'),
-        apiClient.get('/api/platforms')
+        apiClient.get('/auth/profile'),
+        apiClient.get('/withdrawals'),
+        apiClient.get('/royalties'),
+        apiClient.get('/sales'),
+        apiClient.get('/books'),
+        apiClient.get('/platforms')
       ]);
 
       if (profileRes.status === 'fulfilled') {
@@ -185,7 +185,7 @@ const AuthorDashboard = () => {
     e.preventDefault();
     setSubmittingEdit(true);
     try {
-      await apiClient.put('/api/auth/profile', {
+      await apiClient.put('/auth/profile', {
         ...editForm,
         bank_details: {
           bank_name: editForm.bank_name,
@@ -213,7 +213,7 @@ const AuthorDashboard = () => {
     }
     setSubmittingWithdrawal(true);
     try {
-      const { data } = await apiClient.post('/api/withdrawals', { amount });
+      const { data } = await apiClient.post('/withdrawals', { amount });
       setWithdrawals(prev => [data, ...prev]);
       toast({ title: 'Request Sent' });
       setWithdrawalModalOpen(false);

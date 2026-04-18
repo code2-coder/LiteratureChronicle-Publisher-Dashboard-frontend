@@ -64,9 +64,18 @@ const AuthorForm = ({ onSuccess, onCancel }) => {
       toast({ title: 'Success', description: 'Author account created successfully' });
       if (onSuccess) onSuccess();
     } catch (error) {
-      console.error('Error creating author:', error);
-      const errorMsg = error.response?.data?.message || 'Failed to create author profile.';
-      toast({ title: 'Registration Failed', description: errorMsg, variant: 'destructive' });
+      console.error('Registration error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Failed to create author profile.';
+      toast({ 
+        title: 'Registration Failed', 
+        description: errorMsg, 
+        variant: 'destructive' 
+      });
     } finally {
       setLoading(false);
     }

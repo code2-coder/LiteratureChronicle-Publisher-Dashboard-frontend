@@ -46,7 +46,7 @@ const LoginPage = () => {
     <>
       <Helmet>
         <title>Author Login - Literature Chronicle</title>
-        <link rel="icon" type="image/png" href="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" />
+        <link rel="icon" type="image/png" href="/logo.png" />
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col">
@@ -54,7 +54,7 @@ const LoginPage = () => {
         <div className="flex-grow flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-card rounded-2xl shadow-xl border p-8">
             <div className="text-center mb-8">
-              <img src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" alt="Logo" className="h-20 w-20 rounded-full mx-auto mb-4 object-cover" />
+              <img src="/logo.png" alt="Logo" className="h-20 w-20 rounded-full mx-auto mb-4 object-cover" />
               <h1 className="text-2xl font-bold text-primary">Author Portal</h1>
             </div>
 

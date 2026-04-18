@@ -94,7 +94,7 @@ const HomePage = () => {
             <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
               <motion.div variants={itemVariants} className="mb-10">
                 <img 
-                  src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
+                  src="/logo.png" 
                   alt="Literature Chronicle Logo" 
                   className="h-32 md:h-44 w-auto object-contain drop-shadow-2xl"
                 />
@@ -204,7 +204,7 @@ const HomePage = () => {
             <div className="flex flex-col md:flex-row items-center justify-between gap-12 border-t border-slate-100 pt-16">
               <div className="flex items-center gap-4 group">
                 <img 
-                  src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
+                  src="/logo.png" 
                   alt="Literature Chronicle Logo" 
                   className="h-10 w-auto transition-transform group-hover:rotate-12"
                 />

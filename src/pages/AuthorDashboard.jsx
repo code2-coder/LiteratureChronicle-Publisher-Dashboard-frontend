@@ -31,7 +31,7 @@ const AuthorDashboard = () => {
   const [payments, setPayments] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [authorProfile, setAuthorProfile] = useState(null);
-  const [booksData, setBooksData] = useState({ list: [], diagnostics: null });
+  const [booksData, setBooksData] = useState({ list: [] });
   const [selectedBook, setSelectedBook] = useState(null);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
 
@@ -123,8 +123,7 @@ const AuthorDashboard = () => {
 
       setSales(authorSales);
       setBooksData({
-        list: authorBooks,
-        diagnostics: booksRaw.diagnostics || null
+        list: authorBooks
       });
 
       const paymentsForCalc = paymentsRes.status === 'fulfilled' ? paymentsRes.value.data : [];
@@ -352,21 +351,7 @@ const AuthorDashboard = () => {
                         <BookOpen className="h-12 w-12 text-primary/30" />
                       </div>
                       <h3 className="text-xl font-bold text-primary">No works found</h3>
-                      <p className="text-muted-foreground max-w-sm">No books have been assigned to your profile yet. Please confirm your Account ID with the administrator.</p>
-                      
-                      <div className="mt-8 p-4 bg-primary/5 rounded-2xl border border-primary/10 w-full max-w-md">
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-3 text-center">Connection Status</p>
-                        <div className="space-y-2 font-mono text-[11px] text-muted-foreground">
-                          <div className="flex justify-between border-b border-primary/5 pb-1">
-                            <span>Author ID:</span>
-                            <span className="text-primary font-bold">{currentUser?._id || currentUser?.id || 'Unknown'}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Database Match:</span>
-                            <span className="text-secondary font-bold">{booksData.list?.length || 0} Records</span>
-                          </div>
-                        </div>
-                      </div>
+                      <p className="text-muted-foreground max-w-sm">No books have been assigned to your profile yet. Please contact the administrator if you believe this is an error.</p>
                     </div>
                   ) : (
                     <div className="glass-card rounded-3xl border-none overflow-hidden shadow-sm">

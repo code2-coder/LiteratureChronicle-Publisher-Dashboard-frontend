@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search, Copy } from 'lucide-react';
 import ImageGallery from '@/components/ImageGallery';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
@@ -278,6 +278,19 @@ const BookManagementSection = () => {
     }
   };
 
+  const handleDuplicate = (book) => {
+    const clonedBook = {
+      ...book,
+      _id: null,
+      isbn: '', // Unique per format
+      sku_code: '', // Unique per format
+      format: book.format === 'physical' ? 'ebook' : 'physical',
+      mrp: book.format === 'physical' ? (book.mrp * 0.5).toFixed(2) : (book.mrp * 2).toFixed(2), // Just a starting suggestion
+    };
+    setEditingBook(clonedBook);
+    setIsFormOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -373,8 +386,11 @@ const BookManagementSection = () => {
                   <td className="py-4 px-6 text-muted-foreground">{book.pages || '--'}</td>
                   <td className="py-4 px-6 text-muted-foreground">₹{book.mrp}</td>
                   <td className="py-4 px-6 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => { setEditingBook(book); setIsFormOpen(true); }}><Edit className="h-4 w-4 text-blue-600" /></Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(book._id)}><Trash2 className="h-4 w-4 text-red-600" /></Button>
+                    <div className="flex justify-end gap-1">
+                      <Button variant="ghost" size="sm" title="Duplicate as Alternate Format" onClick={() => handleDuplicate(book)}><Copy className="h-4 w-4 text-amber-600" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingBook(book); setIsFormOpen(true); }}><Edit className="h-4 w-4 text-blue-600" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(book._id)}><Trash2 className="h-4 w-4 text-red-600" /></Button>
+                    </div>
                   </td>
                 </tr>
               ))}

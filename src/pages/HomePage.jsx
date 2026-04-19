@@ -92,11 +92,22 @@ const HomePage = () => {
             variants={containerVariants}
           >
             <div className="max-w-5xl mx-auto flex flex-col items-center text-center">
-              <motion.div variants={itemVariants} className="mb-10">
+              <motion.div 
+                variants={itemVariants} 
+                className="mb-10"
+                animate={{ 
+                  y: [0, -20, 0],
+                }}
+                transition={{ 
+                  duration: 6, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+              >
                 <img 
                   src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
                   alt="Literature Chronicle Logo" 
-                  className="h-32 md:h-44 w-auto object-contain drop-shadow-2xl"
+                  className="h-32 md:h-44 w-auto object-contain drop-shadow-2xl rounded-3xl"
                 />
               </motion.div>
               
@@ -110,7 +121,7 @@ const HomePage = () => {
 
               <motion.h1 
                 variants={itemVariants}
-                className="text-6xl md:text-8xl font-serif font-bold text-primary mb-8 leading-[1.1] tracking-tight"
+                className="text-4xl md:text-6xl font-serif font-bold text-primary mb-8 leading-[1.2] tracking-tight"
               >
                 Elevating the Art of <br/>
                 <span className="text-secondary italic font-normal">Literary Success</span>
@@ -118,7 +129,7 @@ const HomePage = () => {
 
               <motion.p 
                 variants={itemVariants}
-                className="text-xl md:text-2xl text-muted-foreground/80 mb-12 max-w-2xl mx-auto font-light leading-relaxed"
+                className="text-lg md:text-xl text-muted-foreground/80 mb-12 max-w-2xl mx-auto font-light leading-relaxed"
               >
                 A distinguished platform designed for esteemed authors and publishers to monitor performance, automate royalties, and manage portfolios with unparalleled elegance.
               </motion.p>
@@ -141,13 +152,13 @@ const HomePage = () => {
         {/* Features Section */}
         <section id="features" className="relative py-32 bg-slate-50/50">
           <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-24">
+            <div className="text-center mb-20">
               <span className="text-secondary font-bold tracking-widest uppercase text-xs mb-4 block">Capabilities</span>
-              <h2 className="text-5xl font-serif font-bold text-primary mb-6">
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-6">
                 Refined Tools for the Modern Author
               </h2>
               <div className="w-24 h-1 bg-secondary mx-auto mb-8 rounded-full"></div>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-light leading-relaxed">
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light">
                 Sophisticated features engineered to simplify revenue tracking and portfolio management.
               </p>
             </div>
@@ -158,15 +169,24 @@ const HomePage = () => {
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
+                  whileHover={{ 
+                    y: -10, 
+                    scale: 1.02,
+                    boxShadow: "0 40px 80px -15px rgba(0,0,0,0.1)"
+                  }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="glass-card p-10 rounded-3xl hover:bg-white transition-all duration-500 group premium-shadow border-none"
+                  transition={{ 
+                    layout: { duration: 0.3 },
+                    opacity: { duration: 0.5 },
+                    y: { duration: 0.5 }
+                  }}
+                  className="glass-card p-10 rounded-3xl bg-white/50 backdrop-blur-sm transition-all duration-300 group premium-shadow border border-white/20"
                 >
                   <div className="mb-8 p-5 bg-primary/5 rounded-2xl inline-block group-hover:bg-secondary/10 group-hover:scale-110 transition-all duration-500 text-secondary">
                     {feature.icon}
                   </div>
-                  <h3 className="text-2xl font-serif font-bold text-primary mb-4 group-hover:text-secondary transition-colors">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed font-light text-lg">{feature.description}</p>
+                  <h3 className="text-xl font-serif font-bold text-primary mb-3 group-hover:text-secondary transition-colors">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed font-light text-base">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -185,14 +205,20 @@ const HomePage = () => {
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[100px] -ml-64 -mb-64"></div>
             
             <div className="relative z-10">
-              <h2 className="text-5xl md:text-6xl font-serif font-bold mb-8 leading-tight">Ready to Master Your <br/>Literary Legacy?</h2>
-              <p className="text-xl md:text-2xl mb-12 text-primary-foreground/70 max-w-3xl mx-auto font-light leading-relaxed">
+              <h2 className="text-3xl md:text-5xl font-serif font-bold mb-8 leading-tight">Ready to Master Your <br/>Literary Legacy?</h2>
+              <p className="text-lg md:text-xl mb-12 text-primary-foreground/70 max-w-3xl mx-auto font-light leading-relaxed">
                 Trust Literature Chronicle to manage your publishing success with the precision and elegance your work deserves.
               </p>
               <Link to="/login">
-                <Button size="lg" className="text-xl px-14 py-8 bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all hover:scale-105 rounded-full shadow-2xl font-bold">
-                  Access Portal
-                </Button>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-block"
+                >
+                  <Button size="lg" className="text-xl px-14 py-8 bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all rounded-full shadow-2xl font-bold">
+                    Access Portal
+                  </Button>
+                </motion.div>
               </Link>
             </div>
           </motion.div>
@@ -200,20 +226,26 @@ const HomePage = () => {
 
         {/* Footer */}
         <footer className="bg-white py-16">
-          <div className="container mx-auto px-4">
+          <motion.div 
+            className="container mx-auto px-4"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+          >
             <div className="flex flex-col md:flex-row items-center justify-between gap-12 border-t border-slate-100 pt-16">
               <div className="flex items-center gap-4 group">
                 <img 
                   src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
                   alt="Literature Chronicle Logo" 
-                  className="h-10 w-auto transition-transform group-hover:rotate-12"
+                  className="h-10 w-auto transition-transform group-hover:rotate-12 rounded-xl"
                 />
                 <span className="font-serif font-bold text-2xl tracking-tight text-primary">Literature Chronicle</span>
               </div>
               
-              <div className="flex gap-8 text-sm font-medium text-muted-foreground">
-                <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-                <Link to="/login" className="hover:text-primary transition-colors">Portal</Link>
+              <div className="flex gap-8 text-sm font-medium text-muted-foreground font-mono uppercase tracking-widest">
+                <Link to="/" className="hover:text-primary transition-all hover:translate-y-[-2px]">Home</Link>
+                <Link to="/login" className="hover:text-primary transition-all hover:translate-y-[-2px]">Portal</Link>
               </div>
 
               <div className="text-right">
@@ -221,11 +253,11 @@ const HomePage = () => {
                   © {new Date().getFullYear()} Literature Chronicle Publishing.
                 </p>
                 <p className="text-xs text-muted-foreground/60 mt-1 uppercase tracking-widest font-bold">
-                  All rights reserved.
+                  Refining Literary Legacies.
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </footer>
       </div>
     </>

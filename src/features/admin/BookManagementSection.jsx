@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState(
     initialData || {
-      title: '', isbn: '', mrp: '', printing_cost: '', sku_code: '', authorId: '', book_sizes: '5x8', custom_width: '', custom_height: '', format: 'physical'
+      title: '', isbn: '', mrp: '', printing_cost: '', sku_code: '', authorId: '', book_sizes: '5x8', custom_width: '', custom_height: '', format: 'physical', pages: 0
     }
   );
   const [coverFile, setCoverFile] = useState(null);
@@ -34,6 +34,7 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
       submitData.append('sku_code', formData.sku_code || '');
       submitData.append('authorId', formData.authorId);
       submitData.append('format', formData.format);
+      submitData.append('pages', parseInt(formData.pages) || 0);
       
       const size = formData.book_sizes === 'custom' ? `${formData.custom_width}x${formData.custom_height}` : formData.book_sizes;
       submitData.append('book_sizes', size);
@@ -109,11 +110,24 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
         )}
 
         <div className="space-y-2"><Label>SKU Code</Label><Input name="sku_code" value={formData.sku_code} onChange={handleChange} required /></div>
+        <div className="space-y-2"><Label>Number of Pages</Label><Input name="pages" type="number" value={formData.pages} onChange={handleChange} required /></div>
         <div className="space-y-2">
-          <Label>Author</Label>
-          <select name="authorId" value={formData.authorId} onChange={handleChange} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-            <option value="">Select Author</option>
-            {authors.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
+          <Label className="flex gap-1.5 items-center">
+            Author <span className="text-red-500 font-bold">*</span>
+          </Label>
+          <select 
+            name="authorId" 
+            value={formData.authorId} 
+            onChange={handleChange} 
+            required 
+            className="flex h-10 w-full rounded-md border-2 border-primary/10 bg-background px-3 py-2 text-sm focus:border-primary transition-colors"
+          >
+            <option value="">-- Choose Registered Author --</option>
+            {authors.map(a => (
+              <option key={a._id} value={a._id}>
+                {a.name} ({a.email})
+              </option>
+            ))}
           </select>
         </div>
         <div className="space-y-2">
@@ -213,6 +227,7 @@ const BookManagementSection = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'physical', 'ebook'
 
   const { toast } = useToast();
 
@@ -228,7 +243,7 @@ const BookManagementSection = () => {
     setLoading(true);
     try {
       const [bRes, aRes] = await Promise.all([
-        apiClient.get('/books', { params: { page, limit: 10, search } }),
+        apiClient.get('/books', { params: { page, limit: 10, search, format: activeTab } }),
         apiClient.get('/auth/authors')
       ]);
       setBooks(bRes.data.data);
@@ -250,7 +265,7 @@ const BookManagementSection = () => {
 
   useEffect(() => {
     fetchData();
-  }, [page, search]);
+  }, [page, search, activeTab]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this book?')) return;
@@ -266,7 +281,7 @@ const BookManagementSection = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-primary flex items-center gap-2"><BookOpen className="h-6 w-6" /> Book Catalog</h2>
+        <h2 className="text-xl font-bold text-primary flex items-center gap-2"><BookOpen className="h-6 w-6" /> Book Catalog</h2>
         {!isFormOpen && <Button onClick={() => { setEditingBook(null); setIsFormOpen(true); }}><Plus className="h-4 w-4 mr-2" /> Add Book</Button>}
       </div>
 
@@ -289,14 +304,43 @@ const BookManagementSection = () => {
         </div>
       )}
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input 
-          placeholder="Search books by title, ISBN, or SKU..." 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)} 
-          className="pl-9 h-10 w-full md:max-w-md bg-background" 
-        />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex bg-muted/50 p-1 rounded-xl w-fit border border-border">
+          <Button 
+            variant={activeTab === 'all' ? 'default' : 'ghost'} 
+            size="sm" 
+            onClick={() => setActiveTab('all')}
+            className={`rounded-lg px-6 ${activeTab === 'all' ? 'shadow-sm' : 'text-muted-foreground'}`}
+          >
+            All Editions
+          </Button>
+          <Button 
+            variant={activeTab === 'physical' ? 'default' : 'ghost'} 
+            size="sm" 
+            onClick={() => setActiveTab('physical')}
+            className={`rounded-lg px-6 ${activeTab === 'physical' ? 'shadow-sm' : 'text-muted-foreground'}`}
+          >
+            Physical Books
+          </Button>
+          <Button 
+            variant={activeTab === 'ebook' ? 'default' : 'ghost'} 
+            size="sm" 
+            onClick={() => setActiveTab('ebook')}
+            className={`rounded-lg px-6 ${activeTab === 'ebook' ? 'shadow-sm' : 'text-muted-foreground'}`}
+          >
+            Digital Ebooks
+          </Button>
+        </div>
+
+        <div className="relative flex-1 md:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder={`Search ${activeTab === 'all' ? 'catalog' : activeTab + 's'}...`} 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="pl-9 h-10 w-full bg-background" 
+          />
+        </div>
       </div>
 
       <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
@@ -308,6 +352,7 @@ const BookManagementSection = () => {
                 <th className="py-4 px-6">Title</th>
                 <th className="py-4 px-6">Author</th>
                 <th className="py-4 px-6">Format</th>
+                <th className="py-4 px-6">Pages</th>
                 <th className="py-4 px-6">Base MRP</th>
                 <th className="py-4 px-6 text-right">Actions</th>
               </tr>
@@ -325,6 +370,7 @@ const BookManagementSection = () => {
                       {book.format === 'ebook' ? 'Ebook' : 'Physical'}
                     </span>
                   </td>
+                  <td className="py-4 px-6 text-muted-foreground">{book.pages || '--'}</td>
                   <td className="py-4 px-6 text-muted-foreground">₹{book.mrp}</td>
                   <td className="py-4 px-6 text-right">
                     <Button variant="ghost" size="sm" onClick={() => { setEditingBook(book); setIsFormOpen(true); }}><Edit className="h-4 w-4 text-blue-600" /></Button>

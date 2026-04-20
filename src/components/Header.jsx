@@ -25,7 +25,7 @@ const Header = () => {
             <Link to="/" className="flex items-center gap-3 group relative z-[60]">
               <div className="relative">
                 <img 
-                  src="/logo.png" 
+                  src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
                   alt="Literature Chronicle Logo" 
                   className="h-9 md:h-11 w-auto object-contain transition-transform duration-500 group-hover:scale-110"
                 />

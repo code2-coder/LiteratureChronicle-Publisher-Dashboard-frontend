@@ -235,7 +235,7 @@ const AuthorDashboard = () => {
   return (
     <>
       <Helmet><title>Author Portfolio - Literature Chronicle</title></Helmet>
-      <div className="min-h-screen bg-[#fcfbf9]">
+      <div className="min-h-screen bg-[#fcfbf9] bg-mesh">
         <Header />
 
         <motion.div
@@ -354,17 +354,17 @@ const AuthorDashboard = () => {
                       <p className="text-muted-foreground max-w-sm">No books have been assigned to your profile yet. Please contact the administrator if you believe this is an error.</p>
                     </div>
                   ) : (
-                    <div className="glass-card rounded-3xl border-none overflow-hidden shadow-sm">
+                    <div className="glass-card rounded-3xl border-none overflow-hidden premium-shadow">
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                          <thead className="bg-primary/5 text-primary uppercase text-[10px] font-bold tracking-widest border-b border-primary/10">
+                          <thead className="bg-primary/5 text-primary uppercase text-[10px] font-bold tracking-[0.2em] border-b border-primary/10">
                             <tr>
-                              <th className="py-5 px-6">Catalog Info</th>
-                              <th className="py-5 px-6">ISBN / SKU</th>
-                              <th className="py-5 px-6">Format</th>
-                              <th className="py-5 px-6 text-center">Pages</th>
-                              <th className="py-5 px-6 text-right">Market MRP</th>
-                              <th className="py-5 px-6 text-right">Actions</th>
+                              <th className="py-6 px-8">Catalog Info</th>
+                              <th className="py-6 px-8">ISBN / SKU</th>
+                              <th className="py-6 px-8">Format</th>
+                              <th className="py-6 px-8 text-center">Pages</th>
+                              <th className="py-6 px-8 text-right">Market MRP</th>
+                              <th className="py-6 px-8 text-right">Actions</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-primary/5">

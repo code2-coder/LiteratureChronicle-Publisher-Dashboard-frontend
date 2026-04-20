@@ -73,7 +73,7 @@ const HomePage = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-background flex flex-col font-sans">
+      <div className="min-h-screen bg-background flex flex-col font-sans bg-mesh selection:bg-secondary/30">
         <Header />
 
         {/* Hero Section */}
@@ -105,7 +105,7 @@ const HomePage = () => {
                 }}
               >
                 <img 
-                  src="https://horizons-cdn.hostinger.com/9bc70898-334e-45cd-a18a-f7cba077ad04/6021826ec5c51410d3136593cfcafc49.png" 
+                  src="/logo.png" 
                   alt="Literature Chronicle Logo" 
                   className="h-32 md:h-44 w-auto object-contain drop-shadow-2xl rounded-3xl"
                 />
@@ -121,10 +121,10 @@ const HomePage = () => {
 
               <motion.h1 
                 variants={itemVariants}
-                className="text-4xl md:text-6xl font-serif font-bold text-primary mb-8 leading-[1.2] tracking-tight"
+                className="text-4xl md:text-7xl font-serif font-bold text-primary mb-8 leading-[1.1] tracking-tighter"
               >
                 Elevating the Art of <br/>
-                <span className="text-secondary italic font-normal">Literary Success</span>
+                <span className="luxury-gradient italic font-normal">Literary Success</span>
               </motion.h1>
 
               <motion.p 

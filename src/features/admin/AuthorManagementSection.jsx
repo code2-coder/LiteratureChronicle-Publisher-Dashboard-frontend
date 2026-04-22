@@ -8,7 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Edit, Trash2, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import BalanceSheetDownloader from '@/components/BalanceSheetDownloader.jsx';
 import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog.jsx';
-import { calculateTotalRoyalty, calculatePaidRoyalty, calculateRoyalty } from '@/lib/royaltyCalculator.js';
 
 const AuthorManagementSection = () => {
   const [authors, setAuthors] = useState([]);
@@ -34,52 +33,15 @@ const AuthorManagementSection = () => {
   const fetchAuthors = async () => {
     setLoading(true);
     try {
-      // 1. Fetch paginated authors, FULL author roster (for summary), all sales, and all royalties
-      const [authRes, fullAuthRes, salesRes, royaltiesRes] = await Promise.all([
+      // 1. Fetch paginated authors and FULL author roster (for summary)
+      // The backend now calculates totalRoyalty, totalPayments, and balance automatically using DB Aggregation
+      const [authRes, fullAuthRes] = await Promise.all([
         apiClient.get('/auth/authors', { params: { page, limit: 10, search: searchQuery } }),
-        apiClient.get('/auth/authors', { params: { limit: 10000, search: searchQuery } }),
-        apiClient.get('/sales', { params: { limit: 10000 } }),
-        apiClient.get('/royalties', { params: { limit: 10000 } })
+        apiClient.get('/auth/authors', { params: { limit: 10000, search: searchQuery } })
       ]);
 
-      const { data: users, total, pages } = authRes.data;
-      const allUsers = fullAuthRes.data.data || fullAuthRes.data;
-      const allSales = salesRes.data.data || salesRes.data;
-      const allRoyalties = royaltiesRes.data.data || royaltiesRes.data;
-
-      // 2. Helper function to calculate stats for a single user
-      const calculateUserStats = (user) => {
-        const authorSales = allSales.filter(sale => {
-          const sAuthorId = sale.authorId?._id || sale.authorId;
-          const uId = user._id;
-          return sAuthorId === uId || sAuthorId?.toString() === uId?.toString();
-        });
-
-        const totalRoyaltyValue = authorSales.reduce((sum, sale) => {
-          const mrp = sale.mrp || 0;
-          const qty = sale.quantity || 1;
-          const comm = sale.platformId?.commission_percentage || 0;
-          const printCost = sale.bookId?.printing_cost || 0;
-          const bookType = sale.bookId?.format || sale.format || 'physical';
-          return sum + calculateRoyalty(mrp, comm, printCost, qty, bookType);
-        }, 0);
-
-        const totalPaymentsValue = allRoyalties
-          .filter(r => r.author_contact_number === user.mobile_number)
-          .reduce((sum, r) => sum + (parseFloat(r.paid_amount) || 0), 0);
-
-        return {
-          ...user,
-          totalPayments: totalPaymentsValue,
-          balance: Math.max(0, totalRoyaltyValue - totalPaymentsValue)
-        };
-      };
-
-      // 3. Process current page authors
-      const enrichedAuthors = users.map(calculateUserStats);
-      
-      // 4. Process all authors for global summary/download
-      const fullSummary = allUsers.map(calculateUserStats);
+      const { data: enrichedAuthors, total, pages } = authRes.data;
+      const fullSummary = fullAuthRes.data.data || fullAuthRes.data;
 
       setAuthors(enrichedAuthors);
       setAllAuthorsSummary(fullSummary);
@@ -321,13 +283,31 @@ const AuthorManagementSection = () => {
               <thead className="bg-muted">
                 <tr>
                   <th className="p-4 font-semibold text-muted-foreground uppercase text-xs tracking-wider">Author</th>
+                  <th className="p-4 font-semibold text-muted-foreground uppercase text-xs tracking-wider">Payment Info</th>
                   <th className="p-4 font-semibold text-muted-foreground uppercase text-xs tracking-wider text-right">Balance Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {[...allAuthorsSummary].sort((a, b) => b.balance - a.balance).map(a => (
                   <tr key={a._id} className="hover:bg-muted/30">
-                    <td className="p-4 font-medium">{a.name || 'Unnamed Author'}</td>
+                    <td className="p-4">
+                      <div className="font-bold text-foreground">{a.name || 'Unnamed Author'}</div>
+                      <div className="text-[10px] text-muted-foreground">{a.mobile_number || 'No Mobile'}</div>
+                    </td>
+                    <td className="p-4 text-[11px]">
+                      {a.bank_details?.upi ? (
+                        <div className="font-mono text-primary bg-primary/5 px-2 py-1 rounded inline-block border border-primary/10">
+                          {a.bank_details.upi}
+                        </div>
+                      ) : a.bank_details?.account_number ? (
+                        <div className="text-muted-foreground leading-tight">
+                          <span className="font-semibold">{a.bank_details.bank_name}</span><br />
+                          ..{a.bank_details.account_number.slice(-4)} ({a.bank_details.ifsc_code || a.bank_details.ifsc})
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground/40 italic text-[10px]">Pending Details</span>
+                      )}
+                    </td>
                     <td className="p-4 font-bold text-orange-600 text-right">{formatCurrency(a.balance)}</td>
                   </tr>
                 ))}

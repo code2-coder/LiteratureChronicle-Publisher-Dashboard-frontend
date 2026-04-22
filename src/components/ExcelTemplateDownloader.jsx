@@ -22,12 +22,13 @@ const ExcelTemplateDownloader = () => {
     setDownloading(true);
     try {
       if (templateType === 'sales') {
-        const response = await apiClient.get('/sales');
-        const salesData = response.data;
+        const response = await apiClient.get('/sales', { params: { limit: 10000 } });
+        const salesData = (response.data.data || response.data || []);
 
+        const headers = ['Title', 'ISBN', 'MRP', 'Order ID', 'Platform Name', 'Quantity', 'Order Date'];
         let templateData = [];
 
-        if (salesData.length > 0) {
+        if (Array.isArray(salesData) && salesData.length > 0) {
           templateData = salesData.map(sale => ({
             Title: sale.title || '',
             ISBN: sale.isbn || '',
@@ -37,52 +38,38 @@ const ExcelTemplateDownloader = () => {
             Quantity: sale.quantity || 1,
             'Order Date': formatDate(sale.order_date),
           }));
-        } else {
-          // Fallback to example if no data
-          templateData = [
-            {
-              Title: 'Example Book Title',
-              ISBN: '978-3-16-148410-0',
-              MRP: 499,
-              'Order ID': 'ORD-001',
-              'Platform Name': 'Amazon',
-              Quantity: 1,
-              'Order Date': formatDate(new Date()),
-            },
-          ];
         }
 
-        const ws = XLSX.utils.json_to_sheet(templateData);
+        const ws = XLSX.utils.json_to_sheet(templateData, { header: headers });
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Book Sales');
         XLSX.writeFile(wb, 'Current_Book_Sales.xlsx');
       } else {
-        const response = await apiClient.get('/royalties');
-        const royaltyData = response.data;
+        const response = await apiClient.get('/royalties', { params: { limit: 10000 } });
+        const royaltyData = (response.data.data || response.data || []);
 
+        const headers = [
+          'Author Name', 'Contact Number', 'Bank Name', 'Account Holder', 
+          'Account Number', 'IFSC Code', 'UPI ID', 'Amount', 'Payment Date', 'Status'
+        ];
         let templateData = [];
 
-        if (royaltyData.length > 0) {
+        if (Array.isArray(royaltyData) && royaltyData.length > 0) {
           templateData = royaltyData.map(r => ({
             'Author Name': r.author_name || (r.authorId?.name) || '',
             'Contact Number': r.author_contact_number || '',
+            'Bank Name': r.authorId?.bank_details?.bank_name || '',
+            'Account Holder': r.authorId?.bank_details?.holder_name || '',
+            'Account Number': r.authorId?.bank_details?.account_number || '',
+            'IFSC Code': r.authorId?.bank_details?.ifsc_code || '',
+            'UPI ID': r.authorId?.bank_details?.upi || '',
             Amount: r.paid_amount || 0,
             'Payment Date': formatDate(r.payment_date),
             Status: r.status || 'paid',
           }));
-        } else {
-          templateData = [
-            {
-              'Author Name': 'John Doe',
-              'Contact Number': '9876543210',
-              Amount: 15000,
-              'Payment Date': formatDate(new Date()),
-              Status: 'Paid',
-            },
-          ];
         }
 
-        const ws = XLSX.utils.json_to_sheet(templateData);
+        const ws = XLSX.utils.json_to_sheet(templateData, { header: headers });
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Royalty');
         XLSX.writeFile(wb, 'Current_Royalty_Data.xlsx');

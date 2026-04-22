@@ -72,6 +72,12 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
     }
   };
 
+  const normalizeISBN = (isbn) => {
+    if (!isbn) return '';
+    // Remove all hyphens, spaces, and other non-alphanumeric characters, then uppercase
+    return String(isbn).replace(/[^0-9X]/gi, '').toUpperCase();
+  };
+
   const parseCustomDate = (dateStr) => {
     if (!dateStr) return new Date();
 
@@ -147,11 +153,12 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         parsedData.forEach((row, index) => {
           const rowNum = index + 2;
           const title = row.Title || row.title || '';
-          const isbn = String(row.ISBN || row.isbn || '').trim();
+          const rawIsbn = String(row.ISBN || row.isbn || '').trim();
+          const normalizedIsbn = normalizeISBN(rawIsbn);
           const pName = row['Platform Name'] || row.platform_name || '';
           const orderId = String(row['Order ID'] || row.order_id || '').trim();
 
-          if (!isbn) {
+          if (!rawIsbn) {
             errors.push({ row: rowNum, type: 'Missing Data', message: 'ISBN field is required.' });
             return;
           }
@@ -169,9 +176,10 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
             errors.push({ row: rowNum, type: 'Security', message: `This Order ID already exists in the system (previously imported).`, provided: orderId });
           }
 
-          const book = books.find(b => b.isbn === isbn);
+          // Search using normalized ISBN
+          const book = books.find(b => normalizeISBN(b.isbn) === normalizedIsbn);
           if (!book) {
-            errors.push({ row: rowNum, type: 'Not Found', message: `Book with ISBN not found in database.`, provided: isbn });
+            errors.push({ row: rowNum, type: 'Not Found', message: `Book with ISBN not found in database.`, provided: rawIsbn });
             return;
           }
 
@@ -273,20 +281,22 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
         const platforms = platformsRes.data.data || platformsRes.data;
 
         const salesToUpload = parsedData.map(row => {
-          const isbn = String(row.ISBN || row.isbn || '').trim();
+          const rawIsbn = String(row.ISBN || row.isbn || '').trim();
+          const normalizedIsbn = normalizeISBN(rawIsbn);
           const pName = String(row['Platform Name'] || row.platform_name || '').trim();
-          const book = books.find(b => b.isbn === isbn);
-          const platform = platforms.find(p => p.name.toLowerCase() === pName.toLowerCase());
+          
+          const book = books.find(b => normalizeISBN(b.isbn) === normalizedIsbn);
+          const platform = platforms.find(p => p.name.toLowerCase().trim() === pName.toLowerCase().trim());
 
           return {
-            title: row.Title || row.title,
-            isbn: isbn,
-            mrp: parseFloat(row.MRP || row.mrp || 0),
+            title: row.Title || row.title || book?.title,
+            isbn: normalizedIsbn, // Store normalized ISBN for consistency
+            mrp: parseFloat(row.MRP || row.mrp || book?.mrp || 0),
             order_id: String(row['Order ID'] || row.order_id || ''),
-            platform_name: pName,
+            platform_name: platform?.name || pName,
             platformId: platform?._id,
             bookId: book?._id,
-            authorId: book?.authorId?._id || book?.authorId, // Handle both populated and non-populated
+            authorId: book?.authorId?._id || book?.authorId, 
             quantity: parseInt(row.Quantity || row.quantity || 1),
             format: row.format || row.Format || row.book_type || book?.format || 'physical',
             order_date: parseCustomDate(row['Order Date'] || row.order_date).toISOString()

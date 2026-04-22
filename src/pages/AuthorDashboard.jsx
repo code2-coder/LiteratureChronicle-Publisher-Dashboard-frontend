@@ -88,18 +88,24 @@ const AuthorDashboard = () => {
     if (isManualRefresh) setIsRefreshing(true);
 
     try {
-      const [profileRes, withdrawalsRes, paymentsRes, salesRes, booksRes, platformsRes] = await Promise.allSettled([
+      // The backend now provides pre-calculated stats in the profile response
+      const [profileRes, withdrawalsRes, paymentsRes, salesRes, booksRes] = await Promise.allSettled([
         apiClient.get('/auth/profile'),
         apiClient.get('/withdrawals'),
         apiClient.get('/royalties'),
-        apiClient.get('/sales'),
-        apiClient.get('/books'),
-        apiClient.get('/platforms')
+        apiClient.get('/sales', { params: { limit: 1000 } }),
+        apiClient.get('/books')
       ]);
+
+      let backendStats = { totalRoyalty: 0, totalPayments: 0, balance: 0, totalQuantitySold: 0 };
 
       if (profileRes.status === 'fulfilled') {
         const pData = profileRes.value.data;
-        setAuthorProfile(pData.data || pData);
+        const profile = pData.data || pData;
+        setAuthorProfile(profile);
+        if (profile.stats) {
+          backendStats = profile.stats;
+        }
       }
 
       if (withdrawalsRes.status === 'fulfilled') {
@@ -118,43 +124,17 @@ const AuthorDashboard = () => {
       const booksRaw = booksRes.status === 'fulfilled' ? booksRes.value.data : [];
       const authorBooks = Array.isArray(booksRaw.data) ? booksRaw.data : (Array.isArray(booksRaw) ? booksRaw : []);
 
-      const platformsRaw = platformsRes.status === 'fulfilled' ? platformsRes.value.data : [];
-      const allPlatforms = Array.isArray(platformsRaw.data) ? platformsRaw.data : (Array.isArray(platformsRaw) ? platformsRaw : []);
-
       setSales(authorSales);
       setBooksData({
         list: authorBooks
       });
 
-      const paymentsForCalc = paymentsRes.status === 'fulfilled' ? paymentsRes.value.data : [];
-      const finalPayments = Array.isArray(paymentsForCalc.data) ? paymentsForCalc.data : (Array.isArray(paymentsForCalc) ? paymentsForCalc : []);
-
-      const paidRoyalty = finalPayments.reduce(
-        (sum, r) => sum + (parseFloat(r.paid_amount) || 0), 0
-      );
-
-      const totalRoyalty = authorSales.reduce((sum, sale) => {
-        const book = sale.bookId || authorBooks.find(b => b._id === sale.bookId);
-        if (!book) return sum;
-
-        let platformCommission = sale.platformId?.commission_percentage || 0;
-        if (!platformCommission && sale.platform_name) {
-          const platform = allPlatforms.find(p => p.name.toLowerCase() === sale.platform_name.toLowerCase());
-          platformCommission = platform?.commission_percentage || 0;
-        }
-
-        return sum + calculateRoyalty(
-          sale.mrp, platformCommission, book.printing_cost || 0,
-          sale.quantity || 1, book.format || 'physical'
-        );
-      }, 0);
-
       setStats({
         publishedWorks: authorBooks.length,
-        totalRoyalty,
-        paidRoyalty,
-        balanceRoyalty: Math.max(0, totalRoyalty - paidRoyalty),
-        totalQuantitySold: authorSales.reduce((sum, s) => sum + (s.quantity || 1), 0)
+        totalRoyalty: backendStats.totalRoyalty,
+        paidRoyalty: backendStats.totalPayments,
+        balanceRoyalty: backendStats.balance,
+        totalQuantitySold: backendStats.totalQuantitySold
       });
 
       if (isManualRefresh) toast({ title: 'Success', description: 'Dashboard updated' });

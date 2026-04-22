@@ -28,7 +28,9 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
     try {
       const submitData = new FormData();
       submitData.append('title', formData.title);
-      submitData.append('isbn', formData.isbn);
+      // Normalize ISBN (remove hyphens/spaces) before saving to DB
+      const normalizedIsbn = (formData.isbn || '').replace(/[^0-9X]/gi, '').toUpperCase();
+      submitData.append('isbn', normalizedIsbn);
       submitData.append('mrp', parseFloat(formData.mrp) || 0);
       submitData.append('printing_cost', parseFloat(formData.printing_cost) || 0);
       submitData.append('sku_code', formData.sku_code || '');

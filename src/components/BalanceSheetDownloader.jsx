@@ -20,14 +20,16 @@ const BalanceSheetDownloader = ({ authorsData }) => {
 
     const exportData = filteredData.map(author => {
       const bank = author.bank_details || {};
-      const bankStr = bank.account_holder ? 
-        `${bank.account_holder} / ${bank.account_number} / ${bank.ifsc} / ${bank.upi || 'N/A'}` : 'Not Provided';
-
+      
       return {
         'Author Name': author.name,
         'Contact Number': author.mobile_number || 'N/A',
         'Balance Amount': author.balance,
-        'Bank Details': bankStr
+        'Bank Name': bank.bank_name || 'N/A',
+        'Account Holder': bank.holder_name || bank.account_holder || 'N/A',
+        'Account Number': bank.account_number || 'N/A',
+        'IFSC Code': bank.ifsc_code || bank.ifsc || 'N/A',
+        'UPI ID': bank.upi || 'N/A'
       };
     });
 

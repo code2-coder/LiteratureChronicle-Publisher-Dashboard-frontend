@@ -21,7 +21,7 @@ const ForgotPasswordPage = () => {
     try {
       await apiClient.post('/auth/forgot-password', { email });
       setSubmitted(true);
-      toast({ title: 'Success', description: 'Password reset link sent to your email.' });
+      toast({ title: 'Success', description: 'Check your Gmail for the reset link.' });
     } catch (err) {
       toast({ 
         title: 'Request Failed', 
@@ -49,7 +49,7 @@ const ForgotPasswordPage = () => {
               </div>
               <h1 className="text-3xl font-serif font-bold text-primary mb-3">Recover Access</h1>
               <p className="text-muted-foreground font-light text-sm">
-                Enter your registered email address and we'll send you a link to reset your password.
+                Enter your email address and we'll send a secure link to reset your password.
               </p>
             </div>
 
@@ -68,7 +68,7 @@ const ForgotPasswordPage = () => {
                 </div>
                 <div className="space-y-4">
                   <Button type="submit" className="w-full py-7 rounded-2xl bg-primary shadow-xl shadow-primary/10 font-bold text-lg" disabled={loading}>
-                    {loading ? 'Sending Request...' : 'Send Reset Link'}
+                    {loading ? 'Sending Link...' : 'Send Reset Link'}
                   </Button>
                   <Link to="/login" className="flex items-center justify-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors">
                     <ArrowLeft className="h-4 w-4" /> Back to Login
@@ -81,7 +81,7 @@ const ForgotPasswordPage = () => {
                   <CheckCircle2 className="h-12 w-12 text-green-600" />
                   <div>
                     <h3 className="font-bold text-green-800">Email Sent Successfully</h3>
-                    <p className="text-xs text-green-700/70 mt-1">Please check your inbox (and spam folder) for further instructions.</p>
+                    <p className="text-xs text-green-700/70 mt-1">Please check your inbox (and spam folder) for the reset link.</p>
                   </div>
                 </div>
                 <Link to="/login">

@@ -16,9 +16,11 @@ const NotFound = () => {
         Page Not Found
       </h1>
       
-      <p className="mb-8 max-w-[500px] text-lg text-muted-foreground">
+      <p className="mb-2 max-w-[500px] text-lg text-muted-foreground">
         The page you're looking for doesn't exist or has been moved. 
-        Let's get you back on track.
+      </p>
+      <p className="mb-8 font-mono text-xs text-destructive bg-destructive/5 px-2 py-1 rounded">
+        URL: {window.location.pathname}
       </p>
       
       <div className="flex flex-wrap items-center justify-center gap-4">

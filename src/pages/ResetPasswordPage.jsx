@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import apiClient from '@/lib/apiClient';
 import Header from '@/components/Header.jsx';
@@ -7,17 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const ResetPasswordPage = () => {
-  const { token } = useParams();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const { token } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,12 +27,13 @@ const ResetPasswordPage = () => {
     setLoading(true);
     try {
       await apiClient.put(`/auth/reset-password/${token}`, { password });
-      toast({ title: 'Success', description: 'Password reset successful. You can now login.' });
-      navigate('/login');
+      setSuccess(true);
+      toast({ title: 'Success', description: 'Your password has been reset.' });
+      setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       toast({ 
         title: 'Error', 
-        description: err.response?.data?.message || 'Token may be invalid or expired.', 
+        description: err.response?.data?.message || 'Failed to reset password.', 
         variant: 'destructive' 
       });
     } finally {
@@ -52,58 +52,51 @@ const ResetPasswordPage = () => {
         <div className="flex-grow flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-primary/5 p-10">
             <div className="text-center mb-10">
-              <div className="bg-secondary/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <KeyRound className="h-10 w-10 text-secondary" />
+              <div className="bg-primary/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Lock className="h-10 w-10 text-primary/40" />
               </div>
-              <h1 className="text-3xl font-serif font-bold text-primary mb-3">Set New Password</h1>
+              <h1 className="text-3xl font-serif font-bold text-primary mb-3">New Credentials</h1>
               <p className="text-muted-foreground font-light text-sm">
-                Ensure your new password is at least 8 characters long and includes numbers or symbols for security.
+                Secure your account by creating a new strong password.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">New Password</Label>
-                <div className="relative">
+            {!success ? (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">New Password</Label>
                   <Input 
-                    type={showPassword ? "text" : "password"} 
+                    type="password" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)} 
-                    className="rounded-xl py-6 bg-slate-50/50 border-primary/10 focus:bg-white transition-all pr-12"
-                    minLength={8}
+                    className="rounded-xl py-6 bg-slate-50/50 border-primary/10"
                     required 
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Confirm Password</Label>
+                  <Input 
+                    type="password" 
+                    value={confirmPassword} 
+                    onChange={(e) => setConfirmPassword(e.target.value)} 
+                    className="rounded-xl py-6 bg-slate-50/50 border-primary/10"
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full py-7 rounded-2xl bg-primary shadow-xl shadow-primary/10 font-bold text-lg group" disabled={loading}>
+                  {loading ? 'Updating...' : 'Set New Password'}
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
+            ) : (
+              <div className="text-center space-y-6">
+                <div className="bg-green-50 p-8 rounded-2xl border border-green-100 flex flex-col items-center gap-4">
+                  <ShieldCheck className="h-16 w-16 text-green-600" />
+                  <h3 className="text-xl font-bold text-green-800">Security Updated</h3>
+                  <p className="text-sm text-green-700/70">Your password has been changed. Redirecting to login...</p>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Confirm New Password</Label>
-                <Input 
-                  type="password" 
-                  value={confirmPassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  className="rounded-xl py-6 bg-slate-50/50 border-primary/10 focus:bg-white transition-all"
-                  required 
-                />
-              </div>
-
-              <div className="pt-4">
-                <Button type="submit" className="w-full py-7 rounded-2xl bg-primary shadow-xl shadow-primary/10 font-bold text-lg flex items-center justify-center gap-3" disabled={loading}>
-                  {loading ? 'Updating...' : (
-                    <>
-                      <ShieldCheck className="h-5 w-5" /> Update Password
-                    </>
-                  )}
-                </Button>
-              </div>
-            </form>
+            )}
           </div>
         </div>
       </div>

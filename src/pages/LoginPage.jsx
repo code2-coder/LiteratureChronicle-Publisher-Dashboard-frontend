@@ -51,11 +51,6 @@ const LoginPage = () => {
               <div className="space-y-2">
                 <Label>Password</Label>
                 <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <div className="flex justify-end">
-                  <Link to="/forgot-password" title="Recover your password" id="forgot-password-link" className="text-sm font-bold text-secondary hover:text-primary transition-colors">
-                    Forgot Password?
-                  </Link>
-                </div>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Authenticating...' : 'Sign In'}</Button>
             </form>

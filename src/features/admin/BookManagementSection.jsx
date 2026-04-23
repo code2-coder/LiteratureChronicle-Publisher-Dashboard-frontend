@@ -229,23 +229,16 @@ const BookManagementSection = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'physical', 'ebook'
 
   const { toast } = useToast();
 
-  // Calculate ebook vs Physical analysis for books
-  const bookAnalysis = React.useMemo(() => {
-    if (books.length === 0) return { ebook: 0, physical: 0, total: 0 };
-    const ebook = books.filter(b => (b.format || b.book_type || 'physical').toLowerCase() === 'ebook').length;
-    const physical = books.filter(b => (b.format || b.book_type || 'physical').toLowerCase() === 'physical').length;
-    return { ebook, physical, total: ebook + physical };
-  }, [books]);
+
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const [bRes, aRes] = await Promise.all([
-        apiClient.get('/books', { params: { page, limit: 10, search, format: activeTab } }),
+        apiClient.get('/books', { params: { page, limit: 10, search } }),
         apiClient.get('/auth/authors')
       ]);
       setBooks(bRes.data.data);
@@ -267,7 +260,7 @@ const BookManagementSection = () => {
 
   useEffect(() => {
     fetchData();
-  }, [page, search, activeTab]);
+  }, [page, search]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this book?')) return;
@@ -302,18 +295,10 @@ const BookManagementSection = () => {
 
       {isFormOpen && <BookForm initialData={editingBook} authors={authors} onSuccess={() => { setIsFormOpen(false); fetchData(); }} onCancel={() => setIsFormOpen(false)} />}
 
-      {bookAnalysis.total > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-muted/30 rounded-lg border border-border">
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Ebook Books</p>
-            <p className="text-2xl font-bold text-blue-600">{bookAnalysis.ebook}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Physical Books</p>
-            <p className="text-2xl font-bold text-green-600">{bookAnalysis.physical}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Total Books</p>
+      {totalItems > 0 && (
+        <div className="flex items-center gap-4 mb-6 p-4 bg-muted/30 rounded-lg border border-border w-fit">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase">Total Books in Catalog:</p>
             <p className="text-2xl font-bold text-primary">{totalItems}</p>
           </div>
         </div>
@@ -321,36 +306,15 @@ const BookManagementSection = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="flex bg-muted/50 p-1 rounded-xl w-fit border border-border">
-          <Button 
-            variant={activeTab === 'all' ? 'default' : 'ghost'} 
-            size="sm" 
-            onClick={() => setActiveTab('all')}
-            className={`rounded-lg px-6 ${activeTab === 'all' ? 'shadow-sm' : 'text-muted-foreground'}`}
-          >
+          <div className="px-6 py-1.5 text-sm font-bold text-primary bg-background rounded-lg shadow-sm border border-border/50">
             All Editions
-          </Button>
-          <Button 
-            variant={activeTab === 'physical' ? 'default' : 'ghost'} 
-            size="sm" 
-            onClick={() => setActiveTab('physical')}
-            className={`rounded-lg px-6 ${activeTab === 'physical' ? 'shadow-sm' : 'text-muted-foreground'}`}
-          >
-            Physical Books
-          </Button>
-          <Button 
-            variant={activeTab === 'ebook' ? 'default' : 'ghost'} 
-            size="sm" 
-            onClick={() => setActiveTab('ebook')}
-            className={`rounded-lg px-6 ${activeTab === 'ebook' ? 'shadow-sm' : 'text-muted-foreground'}`}
-          >
-            Digital Ebooks
-          </Button>
+          </div>
         </div>
 
         <div className="relative flex-1 md:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder={`Search ${activeTab === 'all' ? 'catalog' : activeTab + 's'}...`} 
+            placeholder="Search catalog..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             className="pl-9 h-10 w-full bg-background" 

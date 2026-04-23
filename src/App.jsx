@@ -8,6 +8,8 @@ import ErrorBoundary from '@/components/ErrorBoundary.jsx';
 // Lazy load pages for performance
 const HomePage = lazy(() => import('@/pages/HomePage.jsx'));
 const LoginPage = lazy(() => import('@/pages/LoginPage.jsx'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage.jsx'));
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage.jsx'));
 const AuthorDashboard = lazy(() => import('@/pages/AuthorDashboard.jsx'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard.jsx'));
 const NotFound = lazy(() => import('@/pages/NotFound.jsx'));
@@ -29,6 +31,8 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
               <Route
                 path="/author-dashboard"
                 element={

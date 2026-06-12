@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search, Copy } from 'lucide-react';
+import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search, Copy, Check, ChevronsUpDown } from 'lucide-react';
 import ImageGallery from '@/components/ImageGallery';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState(
@@ -17,6 +20,7 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
   const [coverFile, setCoverFile] = useState(null);
   const [coverUrl, setCoverUrl] = useState(initialData?.book_cover || '');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [openAuthor, setOpenAuthor] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -117,20 +121,51 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
           <Label className="flex gap-1.5 items-center">
             Author <span className="text-red-500 font-bold">*</span>
           </Label>
-          <select 
-            name="authorId" 
-            value={formData.authorId} 
-            onChange={handleChange} 
-            required 
-            className="flex h-10 w-full rounded-md border-2 border-primary/10 bg-background px-3 py-2 text-sm focus:border-primary transition-colors"
-          >
-            <option value="">-- Choose Registered Author --</option>
-            {authors.map(a => (
-              <option key={a._id} value={a._id}>
-                {a.name} ({a.email})
-              </option>
-            ))}
-          </select>
+          <Popover open={openAuthor} onOpenChange={setOpenAuthor}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={openAuthor}
+                className="w-full justify-between h-10 px-3 py-2 border-2 border-primary/10 hover:bg-background bg-background font-normal"
+              >
+                <span className="truncate">
+                  {formData.authorId
+                    ? authors.find((author) => author._id === formData.authorId)?.name || "Select author..."
+                    : "Select author..."}
+                </span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search author..." />
+                <CommandList>
+                  <CommandEmpty>No author found.</CommandEmpty>
+                  <CommandGroup>
+                    {authors.map((author) => (
+                      <CommandItem
+                        key={author._id}
+                        value={`${author.name} ${author.email}`}
+                        onSelect={() => {
+                          setFormData({ ...formData, authorId: author._id });
+                          setOpenAuthor(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4 shrink-0",
+                            formData.authorId === author._id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        <span className="truncate">{author.name} ({author.email})</span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="space-y-2">
           <Label>Book Size</Label>
@@ -239,7 +274,7 @@ const BookManagementSection = () => {
     try {
       const [bRes, aRes] = await Promise.all([
         apiClient.get('/books', { params: { page, limit: 10, search } }),
-        apiClient.get('/auth/authors')
+        apiClient.get('/auth/authors', { params: { limit: 1000 } })
       ]);
       setBooks(bRes.data.data);
       setTotalPages(bRes.data.pages);

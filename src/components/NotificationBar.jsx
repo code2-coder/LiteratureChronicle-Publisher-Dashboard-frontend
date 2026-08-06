@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import apiClient from '@/lib/apiClient';
-import { useAuth } from '@/contexts/AuthContext.jsx';
+import apiClient from '@/services/apiClient';
+import { useAuth } from '@/context/AuthContext.jsx';
 import { Bell, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

@@ -7,6 +7,7 @@ import FileUploadModal from '@/components/FileUploadModal.jsx';
 const BookManagementSection = React.lazy(() => import('@/features/admin/BookManagementSection.jsx'));
 const AuthorManagementSection = React.lazy(() => import('@/features/admin/AuthorManagementSection.jsx'));
 const PlatformManagementSection = React.lazy(() => import('@/features/admin/PlatformManagementSection.jsx'));
+const WithdrawalManagementSection = React.lazy(() => import('@/features/admin/WithdrawalManagementSection.jsx'));
 const UploadHistorySection = React.lazy(() => import('@/features/admin/UploadHistorySection.jsx'));
 import ExcelTemplateDownloader from '@/components/ExcelTemplateDownloader.jsx';
 import { Button } from '@/components/ui/button';
@@ -125,6 +126,7 @@ const AdminDashboard = () => {
                     { id: 'books', label: 'Books', icon: BookOpen },
                     { id: 'authors', label: 'Authors', icon: Users },
                     { id: 'platforms', label: 'Platforms', icon: Server },
+                    { id: 'withdrawals', label: 'Withdrawals', icon: DollarSign },
                     { id: 'history', label: 'History', icon: History },
                   ].map((tab) => (
                     <button
@@ -173,6 +175,7 @@ const AdminDashboard = () => {
                     {activeTab === 'books' && <BookManagementSection />}
                     {activeTab === 'authors' && <AuthorManagementSection />}
                     {activeTab === 'platforms' && <PlatformManagementSection />}
+                    {activeTab === 'withdrawals' && <WithdrawalManagementSection />}
                     {activeTab === 'history' && <UploadHistorySection />}
                   </React.Suspense>
 

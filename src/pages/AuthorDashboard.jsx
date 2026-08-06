@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion, AnimatePresence } from 'framer-motion';
-import apiClient from '@/lib/apiClient';
-import { useAuth } from '@/contexts/AuthContext.jsx';
+import apiClient from '@/services/apiClient';
+import { useAuth } from '@/context/AuthContext.jsx';
 import Header from '@/components/Header.jsx';
 import SalesTable from '@/components/SalesTable.jsx';
 import StatsCards from '@/components/dashboard/StatsCards.jsx';
@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   BookOpen, Wallet, TrendingUp, Loader2, RefreshCw, X, ChevronRight, Star, Quote
 } from 'lucide-react';
-import { calculateRoyalty } from '@/lib/royaltyCalculator.js';
+import { calculateRoyalty } from '@/utils/royaltyCalculator.js';
 
 const AuthorDashboard = () => {
   const { currentUser } = useAuth();

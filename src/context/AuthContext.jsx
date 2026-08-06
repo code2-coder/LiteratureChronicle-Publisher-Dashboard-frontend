@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import apiClient from '@/lib/apiClient';
+import apiClient from '@/services/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -65,5 +65,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-

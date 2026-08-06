@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import apiClient from '@/lib/apiClient';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown, Edit, Trash2 } from 'lucide-react';
-import { calculateRoyalty } from '@/lib/royaltyCalculator.js';
+import { ArrowUpDown, Edit, Trash2, Layers } from 'lucide-react';
+import { calculateRoyalty } from '@/utils/royaltyCalculator.js';
 import { Button } from '@/components/ui/button';
 
 const SalesTable = ({ sales, showRoyalty = false, isPaginated = false, onEdit, onDelete }) => {
@@ -63,44 +62,47 @@ const SalesTable = ({ sales, showRoyalty = false, isPaginated = false, onEdit, o
         </div>
       )}
       
-      <div className="border rounded-xl bg-card overflow-hidden shadow-sm overflow-x-auto scrollbar-thin">
+      <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm overflow-x-auto scrollbar-thin">
         <div className="min-w-[800px]">
           <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                {!isRoyaltyTable && <TableHead className="w-24">Order ID</TableHead>}
-                {!isRoyaltyTable && <TableHead className="w-32">ISBN</TableHead>}
-                {!isRoyaltyTable && <TableHead className="w-24">Type</TableHead>}
+            <TableHeader className="bg-muted/40">
+              <TableRow className="border-b border-border/50 hover:bg-transparent">
+                {!isRoyaltyTable && <TableHead className="w-28 text-xs font-bold text-muted-foreground">Order ID</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-32 text-xs font-bold text-muted-foreground">ISBN</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-24 text-xs font-bold text-muted-foreground">Type</TableHead>}
                 
-                <TableHead className="min-w-[200px]">
-                  <button onClick={() => handleSort(isRoyaltyTable ? 'author_name' : 'title')} className="flex items-center gap-1 hover:text-primary transition-colors">
+                <TableHead className="min-w-[200px] text-xs font-bold text-muted-foreground">
+                  <button onClick={() => handleSort(isRoyaltyTable ? 'author_name' : 'title')} className="flex items-center gap-1.5 hover:text-primary transition-colors font-bold">
                     {isRoyaltyTable ? 'Author Name' : 'Title'} <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
                 
-                {!isRoyaltyTable && <TableHead className="w-24">Platform</TableHead>}
-                {!isRoyaltyTable && <TableHead className="w-24">MRP</TableHead>}
-                {!isRoyaltyTable && <TableHead className="w-20">Qty</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-28 text-xs font-bold text-muted-foreground">Platform</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-24 text-right text-xs font-bold text-muted-foreground">MRP</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-20 text-right text-xs font-bold text-muted-foreground">Qty</TableHead>}
                 
-                {showRoyalty && !isRoyaltyTable && <TableHead className="w-24">Royalty</TableHead>}
+                {showRoyalty && !isRoyaltyTable && <TableHead className="w-24 text-right text-xs font-bold text-muted-foreground">Royalty</TableHead>}
                 
-                {isRoyaltyTable && <TableHead className="w-24">Amount</TableHead>}
-                {isRoyaltyTable && <TableHead className="w-24">Paid Amount</TableHead>}
-                {isRoyaltyTable && <TableHead className="w-24">Balance Amount</TableHead>}
+                {isRoyaltyTable && <TableHead className="w-24 text-right text-xs font-bold text-muted-foreground">Amount</TableHead>}
+                {isRoyaltyTable && <TableHead className="w-24 text-right text-xs font-bold text-muted-foreground">Paid Amount</TableHead>}
+                {isRoyaltyTable && <TableHead className="w-24 text-right text-xs font-bold text-muted-foreground">Balance</TableHead>}
                 
-                <TableHead className="w-32 text-right">
-                  <button onClick={() => handleSort(isRoyaltyTable ? 'payment_date' : 'order_date')} className="flex items-center gap-1 hover:text-primary transition-colors ml-auto">
+                <TableHead className="w-32 text-right text-xs font-bold text-muted-foreground">
+                  <button onClick={() => handleSort(isRoyaltyTable ? 'payment_date' : 'order_date')} className="flex items-center gap-1.5 hover:text-primary transition-colors ml-auto font-bold">
                     {isRoyaltyTable ? 'Payment Date' : 'Order Date'} <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                {!isRoyaltyTable && <TableHead className="w-20 text-right">Actions</TableHead>}
+                {!isRoyaltyTable && <TableHead className="w-20 text-right text-xs font-bold text-muted-foreground">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredAndSortedSales.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="h-32 text-center text-muted-foreground">
-                    No records found matching your criteria.
+                  <TableCell colSpan={10} className="h-40 text-center">
+                    <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
+                      <Layers className="h-8 w-8 opacity-30" />
+                      <p className="text-xs font-medium">No records found matching your criteria.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -113,12 +115,14 @@ const SalesTable = ({ sales, showRoyalty = false, isPaginated = false, onEdit, o
                     const balanceAmount = Math.max(0, amount - paidAmount);
                     
                     return (
-                      <TableRow key={recordId} className="hover:bg-muted/30 transition-colors">
-                        <TableCell className="font-serif font-bold text-primary">{record.author_name || record.authorId?.name || 'Unknown'}</TableCell>
-                        <TableCell className="font-medium">{formatCurrency(amount)}</TableCell>
-                        <TableCell className="text-green-600 font-bold">{formatCurrency(paidAmount)}</TableCell>
-                        <TableCell className="text-orange-600 font-extrabold">{formatCurrency(balanceAmount)}</TableCell>
-                        <TableCell className="text-right text-muted-foreground">{formatDate(record.payment_date)}</TableCell>
+                      <TableRow key={recordId} className="hover:bg-muted/20 border-b border-border/40 transition-colors">
+                        <td className="p-3 font-serif font-bold text-primary">{record.author_name || record.authorId?.name || 'Unknown'}</td>
+                        <td className="p-3 text-right font-semibold font-mono tabular-nums">{formatCurrency(amount)}</td>
+                        <td className="p-3 text-right text-green-600 font-bold font-mono tabular-nums">{formatCurrency(paidAmount)}</td>
+                        <td className={`p-3 text-right font-extrabold font-mono tabular-nums ${balanceAmount > 0 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                          {formatCurrency(balanceAmount)}
+                        </td>
+                        <td className="p-3 text-right text-muted-foreground text-xs">{formatDate(record.payment_date)}</td>
                       </TableRow>
                     );
                   }
@@ -130,32 +134,61 @@ const SalesTable = ({ sales, showRoyalty = false, isPaginated = false, onEdit, o
                   const bookType = record.bookId?.format || record.format || 'physical';
                   const royalty = calculateRoyalty(mrp, comm, printCost, qty, bookType);
 
+                  const getPlatformBadge = (name) => {
+                    const norm = (name || '').toLowerCase();
+                    if (norm.includes('amazon')) return 'bg-amber-50 text-amber-700 border-amber-200/50';
+                    if (norm.includes('flipkart')) return 'bg-blue-50 text-blue-700 border-blue-200/50';
+                    return 'bg-purple-50 text-purple-700 border-purple-200/50';
+                  };
+
+                  const truncateId = (id) => {
+                    if (!id) return 'N/A';
+                    if (id.length <= 12) return id;
+                    return `${id.substring(0, 6)}...${id.substring(id.length - 4)}`;
+                  };
+
                   return (
-                    <TableRow key={recordId} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-mono text-[10px] text-muted-foreground">{record.order_id}</TableCell>
-                      <TableCell className="font-mono text-[10px] text-muted-foreground">{record.isbn}</TableCell>
+                    <TableRow key={recordId} className="hover:bg-muted/20 border-b border-border/40 transition-colors">
+                      <TableCell className="font-mono text-[10px] text-muted-foreground font-semibold" title={record.order_id}>
+                        {truncateId(record.order_id)}
+                      </TableCell>
+                      <TableCell className="font-mono text-[10px] text-muted-foreground font-semibold">
+                        {record.isbn}
+                      </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${bookType === 'ebook' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
-                          {bookType === 'ebook' ? 'Ebook' : 'Physical'}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${
+                          bookType === 'ebook' 
+                            ? 'bg-sky-50 text-sky-700 border-sky-200/50' 
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+                        }`}>
+                          {bookType === 'ebook' ? 'Ebook' : 'Print'}
                         </span>
                       </TableCell>
-                      <TableCell className="font-serif font-bold text-primary max-w-[200px] truncate" title={record.title}>{record.title}</TableCell>
+                      <TableCell className="font-serif font-bold text-primary max-w-[220px] truncate" title={record.title}>
+                        {record.title}
+                      </TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center rounded-lg bg-primary/5 px-2 py-1 text-[10px] font-bold text-primary border border-primary/10">
+                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider border ${getPlatformBadge(record.platform_name)}`}>
                           {record.platform_name}
                         </span>
                       </TableCell>
-                      <TableCell className="font-medium">{formatCurrency(mrp)}</TableCell>
-                      <TableCell className="font-bold">{qty}</TableCell>
-                      {showRoyalty && <TableCell className="text-green-600 font-extrabold">{formatCurrency(royalty)}</TableCell>}
-                      <TableCell className="text-right text-muted-foreground">{formatDate(record.order_date || record.createdAt)}</TableCell>
+                      <TableCell className="text-right font-semibold font-mono tabular-nums text-xs">{formatCurrency(mrp)}</TableCell>
+                      <TableCell className="text-right font-bold font-mono tabular-nums text-xs">{qty}</TableCell>
+                      {showRoyalty && (
+                        <TableCell className="text-right text-purple-700 font-extrabold font-mono tabular-nums text-xs">
+                          {formatCurrency(royalty)}
+                        </TableCell>
+                      )}
+                      <TableCell className="text-right text-muted-foreground text-xs font-medium">
+                        {formatDate(record.order_date || record.createdAt)}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           <Button 
                             variant="ghost" 
                             size="icon" 
                             onClick={() => onEdit && onEdit(record)}
-                            className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg"
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
@@ -163,7 +196,7 @@ const SalesTable = ({ sales, showRoyalty = false, isPaginated = false, onEdit, o
                             variant="ghost" 
                             size="icon" 
                             onClick={() => onDelete && onDelete(record._id)}
-                            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

@@ -1,25 +1,47 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import apiClient from '@/lib/apiClient';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import apiClient from '@/services/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { History, Edit, Trash2, Loader2, FileX, Calendar, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import {
+  History, Edit, Trash2, Loader2, FileX, Calendar, ChevronLeft, ChevronRight,
+  Search, BarChart3, PieChart as PieIcon, TrendingUp, DollarSign, Layers,
+  BookOpen, ChevronDown, Sparkles, AlertCircle, ShoppingCart, Percent, X
+} from 'lucide-react';
 import SalesTable from '@/components/SalesTable.jsx';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip as ChartTooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  CartesianGrid
+} from 'recharts';
 
 const UploadHistorySection = () => {
   const [activeTab, setActiveTab] = useState('sales');
   const [sales, setSales] = useState([]);
   const [royaltyData, setRoyaltyData] = useState([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [authorsMap, setAuthorsMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [salesStats, setSalesStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const { toast } = useToast();
 
   // Edit states for Royalty
@@ -50,23 +72,37 @@ const UploadHistorySection = () => {
     }
   };
 
+  // Debounce the search term by 500ms before triggering a fetch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
         page,
-        limit: 10,
-        search,
+        limit,
+        search: debouncedSearch,
         startDate,
         endDate,
         dateField: activeTab === 'sales' ? 'order_date' : 'payment_date'
       };
 
       if (activeTab === 'sales') {
-        const res = await apiClient.get('/sales', { params });
-        setSales(res.data.data);
-        setTotalPages(res.data.pages);
-        setTotalItems(res.data.total);
+        setLoadingStats(true);
+        const [salesRes, statsRes] = await Promise.all([
+          apiClient.get('/sales', { params }),
+          apiClient.get('/sales/stats', { params })
+        ]);
+        setSales(salesRes.data.data);
+        setTotalPages(salesRes.data.pages);
+        setTotalItems(salesRes.data.total);
+        setSalesStats(statsRes.data);
+        setLoadingStats(false);
       } else {
         await fetchAuthorsMap();
         const res = await apiClient.get('/royalties', { params });
@@ -79,12 +115,13 @@ const UploadHistorySection = () => {
       toast({ title: 'Error', description: 'Failed to load history data.', variant: 'destructive' });
     } finally {
       setLoading(false);
+      setLoadingStats(false);
     }
-  }, [activeTab, page, search, startDate, endDate, toast]);
+  }, [activeTab, page, limit, debouncedSearch, startDate, endDate, toast]);
 
   useEffect(() => {
     setPage(1); // Reset page when tab or filters change
-  }, [activeTab, search, startDate, endDate]);
+  }, [activeTab, debouncedSearch, startDate, endDate, limit]);
 
   useEffect(() => {
     fetchData();
@@ -143,7 +180,6 @@ const UploadHistorySection = () => {
     let datePart = '';
     if (sale.order_date) {
       const d = new Date(sale.order_date);
-      // Format as YYYY-MM-DD for the date input
       datePart = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
     setSaleFormData({
@@ -183,17 +219,12 @@ const UploadHistorySection = () => {
     }
   };
 
-  // Calculate ebook vs Physical analysis for sales
-  const salesAnalysis = React.useMemo(() => {
-    if (sales.length === 0) return { ebook: 0, physical: 0, total: 0 };
-    const ebook = sales.filter(s => (s.bookId?.format || s.format || 'physical').toLowerCase() === 'ebook').length;
-    const physical = sales.filter(s => (s.bookId?.format || s.format || 'physical').toLowerCase() === 'physical').length;
-    return { ebook, physical, total: ebook + physical };
-  }, [sales]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const getPlatformColor = (name) => {
+    const norm = (name || '').toLowerCase();
+    if (norm.includes('amazon')) return '#f59e0b';
+    if (norm.includes('flipkart')) return '#3b82f6';
+    return '#8b5cf6';
+  };
 
   return (
     <div className="space-y-6">
@@ -203,68 +234,291 @@ const UploadHistorySection = () => {
         <Button variant={activeTab === 'royalty' ? 'default' : 'ghost'} onClick={() => setActiveTab('royalty')}>Royalty Data</Button>
       </div>
 
-      {activeTab === 'sales' && salesAnalysis.total > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-muted/30 rounded-lg border border-border">
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Ebook Sales</p>
-            <p className="text-2xl font-bold text-blue-600">{salesAnalysis.ebook}</p>
+      {/* Premium Stat Cards */}
+      {activeTab === 'sales' && salesStats && salesStats.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="glass-card bg-gradient-to-br from-white/70 to-blue-50/40 rounded-2xl p-5 border border-white/50 premium-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Transactions</p>
+                <p className="text-3xl font-extrabold text-primary font-mono tracking-tight">{totalItems}</p>
+              </div>
+              <div className="bg-blue-500/10 p-2.5 rounded-xl text-blue-600">
+                <History className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="h-1.5 w-full bg-blue-100 rounded-full overflow-hidden mt-4">
+              <div className="bg-blue-500 h-full rounded-full" style={{ width: '100%' }}></div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 font-medium">Matching search & filters</p>
           </div>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Physical Sales</p>
-            <p className="text-2xl font-bold text-green-600">{salesAnalysis.physical}</p>
+
+          <div className="glass-card bg-gradient-to-br from-white/70 to-emerald-50/40 rounded-2xl p-5 border border-white/50 premium-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Units Distributed</p>
+                <p className="text-3xl font-extrabold text-primary font-mono tracking-tight">{salesStats.summary.totalQuantity || 0}</p>
+              </div>
+              <div className="bg-emerald-500/10 p-2.5 rounded-xl text-emerald-600">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-4 font-semibold">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-500" /> Ebook: {salesStats.summary.totalEbook || 0}</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" /> Print: {salesStats.summary.totalPhysical || 0}</span>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Total Records</p>
-            <p className="text-2xl font-bold text-primary">{totalItems}</p>
+
+          <div className="glass-card bg-gradient-to-br from-white/70 to-amber-50/40 rounded-2xl p-5 border border-white/50 premium-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Estimated Revenue</p>
+                <p className="text-3xl font-extrabold text-primary font-mono tracking-tight">{formatCurrency(salesStats.summary.totalRevenue)}</p>
+              </div>
+              <div className="bg-amber-500/10 p-2.5 rounded-xl text-amber-600">
+                <ShoppingCart className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="h-1.5 w-full bg-amber-100 rounded-full overflow-hidden mt-4">
+              <div 
+                className="bg-amber-500 h-full rounded-full" 
+                style={{ width: `${salesStats.summary.totalRevenue ? Math.min(100, (salesStats.summary.totalRoyalty / salesStats.summary.totalRevenue) * 100) : 0}%` }}
+              ></div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2 font-semibold flex justify-between">
+              <span>Avg Sales Value:</span>
+              <span className="font-mono">{formatCurrency(salesStats.summary.totalItems ? (salesStats.summary.totalRevenue / salesStats.summary.totalItems) : 0)}</span>
+            </p>
           </div>
+
+          <div className="glass-card bg-gradient-to-br from-white/70 to-purple-50/40 rounded-2xl p-5 border border-white/50 premium-shadow">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Accrued Royalties</p>
+                <p className="text-3xl font-extrabold text-purple-700 font-mono tracking-tight">{formatCurrency(salesStats.summary.totalRoyalty)}</p>
+              </div>
+              <div className="bg-purple-500/10 p-2.5 rounded-xl text-purple-600">
+                <Percent className="h-5 w-5" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground mt-4 font-semibold">
+              <span>Royalty Yield Rate:</span>
+              <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-mono">
+                {salesStats.summary.totalRevenue ? ((salesStats.summary.totalRoyalty / salesStats.summary.totalRevenue) * 100).toFixed(1) : '0.0'}%
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Visual Analytics Charts */}
+      {activeTab === 'sales' && salesStats && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center bg-card p-4 rounded-xl border border-border shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-amber-500/10 p-2 rounded-lg">
+                <Sparkles className="h-4 w-4 text-amber-600 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-primary">Interactive Sales & Royalty Analytics</h3>
+                <p className="text-[10px] text-muted-foreground">Visualize distribution trends, split analysis, and sales history</p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAnalytics(!showAnalytics)}
+              className="gap-2 text-xs font-semibold h-9"
+            >
+              {showAnalytics ? 'Hide Charts' : 'Show Charts'}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${showAnalytics ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+
+          {showAnalytics && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-card rounded-2xl border border-border p-6 shadow-sm">
+                <h4 className="text-xs font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
+                  <TrendingUp className="h-4 w-4 text-emerald-600" /> Sales Trend & Royalties
+                </h4>
+                <div className="h-[280px] w-full">
+                  {salesStats.dailySales && salesStats.dailySales.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={salesStats.dailySales} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                          <linearGradient id="colorRoyalty" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                        <XAxis
+                          dataKey="_id"
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{ fontSize: 9, fill: '#64748b' }}
+                          tickFormatter={(date) => {
+                            try {
+                              return new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                            } catch (e) {
+                              return date;
+                            }
+                          }}
+                        />
+                        <YAxis yAxisId="left" tickLine={false} axisLine={false} tick={{ fontSize: 9, fill: '#64748b' }} />
+                        <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 9, fill: '#64748b' }} tickFormatter={(val) => `₹${val}`} />
+                        <ChartTooltip
+                          contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontSize: 11 }}
+                          labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                        />
+                        <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, fontWeight: '700' }} />
+                        <Area yAxisId="left" type="monotone" dataKey="salesCount" name="Units Sold" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
+                        <Area yAxisId="right" type="monotone" dataKey="royalty" name="Estimated Royalty (₹)" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRoyalty)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                      <AlertCircle className="h-8 w-8 opacity-40" />
+                      <p className="text-xs">No trend data available for this range</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-card rounded-2xl border border-border p-6 shadow-sm flex flex-col justify-between">
+                <h4 className="text-xs font-bold text-primary mb-4 flex items-center gap-2 uppercase tracking-wider">
+                  <PieIcon className="h-4 w-4 text-amber-500" /> Platform Distribution Split
+                </h4>
+                <div className="h-[200px] w-full relative flex-1 flex items-center justify-center">
+                  {salesStats.platformDistribution && salesStats.platformDistribution.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={salesStats.platformDistribution}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={75}
+                          paddingAngle={3}
+                          dataKey="quantity"
+                          nameKey="_id"
+                        >
+                          {salesStats.platformDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={getPlatformColor(entry._id)} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip
+                          contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: 11 }}
+                          formatter={(value, name, props) => [`${value} Units (₹${formatCurrency(props.payload.royalty)} Royalty)`, name]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
+                      <AlertCircle className="h-8 w-8 opacity-40" />
+                      <p className="text-xs">No distribution data available</p>
+                    </div>
+                  )}
+                </div>
+                {salesStats.platformDistribution && salesStats.platformDistribution.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 mt-3 pt-3 border-t">
+                    {salesStats.platformDistribution.map((entry, index) => (
+                      <div key={entry._id} className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: getPlatformColor(entry._id) }} />
+                        <span>{entry._id} ({entry.quantity} units)</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Filter Bar */}
       <div className="flex flex-wrap items-end gap-3 p-4 bg-muted/20 rounded-xl border border-border/50">
         <div className="flex-1 min-w-[240px] space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">Search Records</Label>
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1 font-bold">Search Records</Label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            {search !== debouncedSearch ? (
+              <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
+            ) : (
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            )}
             <Input
+              id="sales-search-input"
               placeholder={activeTab === 'sales' ? "Search title, ISBN, order ID..." : "Search author name or contact..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 bg-background"
+              className="pl-9 pr-9 h-10 bg-background border-border/70"
             />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="w-[160px] space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">Start Date</Label>
+        <div className="w-[150px] space-y-1.5">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1 font-bold">Start Date</Label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
+              id="sales-start-date"
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="pl-9 h-10 bg-background"
+              className="pl-9 h-10 bg-background border-border/70"
             />
           </div>
         </div>
 
-        <div className="w-[160px] space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1">End Date</Label>
+        <div className="w-[150px] space-y-1.5">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1 font-bold">End Date</Label>
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
+              id="sales-end-date"
               type="date"
               value={endDate}
+              min={startDate || undefined}
               onChange={(e) => setEndDate(e.target.value)}
-              className="pl-9 h-10 bg-background"
+              className="pl-9 h-10 bg-background border-border/70"
             />
           </div>
         </div>
 
+        <div className="w-[130px] space-y-1.5">
+          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground ml-1 font-bold">Page Size</Label>
+          <select
+            id="sales-page-size"
+            value={limit}
+            onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+            className="w-full h-10 px-3 bg-background border border-input rounded-md text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary/20"
+          >
+            <option value={10}>10 records</option>
+            <option value={25}>25 records</option>
+            <option value={50}>50 records</option>
+            <option value={100}>100 records</option>
+          </select>
+        </div>
+
         <Button
+          id="sales-filter-reset"
           variant="outline"
-          onClick={() => { setSearch(''); setStartDate(''); setEndDate(''); setPage(1); }}
-          className="h-10 text-xs px-3"
+          onClick={() => { setSearch(''); setDebouncedSearch(''); setStartDate(''); setEndDate(''); setPage(1); }}
+          className="h-10 text-xs px-4 font-bold border-border/80 hover:bg-muted"
+          disabled={!search && !startDate && !endDate && page === 1 && limit === 10}
         >
           Reset
         </Button>

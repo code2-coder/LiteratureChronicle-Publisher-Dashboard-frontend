@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
-import apiClient from '@/lib/apiClient';
-import { calculateAuthorBalance } from '@/lib/royaltyCalculator';
+import apiClient from '@/services/apiClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -238,7 +237,7 @@ const FileUploadModal = ({ isOpen, onClose, type }) => {
           // Balance Validation
           const author = authors.find(a => a.mobile_number === contactNumber);
           if (author && (row.Status || row.status || 'paid').toLowerCase() === 'paid') {
-            const balance = await calculateAuthorBalance(author._id, author.mobile_number);
+            const balance = author.balance || 0;
             if (amount > balance) {
               errors.push({
                 row: rowNum,

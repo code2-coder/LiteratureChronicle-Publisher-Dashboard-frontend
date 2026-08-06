@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import apiClient from '@/lib/apiClient';
+import apiClient from '@/services/apiClient';
 import Header from '@/components/Header.jsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
-import { AuthProvider } from '@/contexts/AuthContext.jsx';
+import { AuthProvider } from '@/context/AuthContext.jsx';
 import ScrollToTop from '@/components/ScrollToTop.jsx';
 import ProtectedRoute from '@/components/ProtectedRoute.jsx';
 import ErrorBoundary from '@/components/ErrorBoundary.jsx';

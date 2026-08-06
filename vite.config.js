@@ -305,12 +305,37 @@ export default defineConfig({
 			'/api': {
 				target: process.env.VITE_API_URL || 'http://127.0.0.1:8080',
 				changeOrigin: true,
+				proxyTimeout: 10000,
+				timeout: 10000,
+				configure: (proxy) => {
+					proxy.on('error', (err, req, res) => {
+						// Retry on ECONNREFUSED (backend restarting) up to 3 times
+						const maxRetries = 3;
+						req._retryCount = (req._retryCount || 0) + 1;
+						if (req._retryCount <= maxRetries && err.code === 'ECONNREFUSED') {
+							setTimeout(() => {
+								proxy.web(req, res, {
+									target: process.env.VITE_API_URL || 'http://127.0.0.1:8080',
+								});
+							}, 300 * req._retryCount);
+						} else {
+							// After retries exhausted, return a clean JSON error
+							if (!res.headersSent) {
+								res.writeHead(503, { 'Content-Type': 'application/json' });
+								res.end(JSON.stringify({ message: 'Backend service unavailable. Please wait a moment and try again.' }));
+							}
+						}
+					});
+				},
 			},
 		},
 	},
 	resolve: {
 		extensions: ['.jsx', '.js', '.tsx', '.ts', '.json',],
 		alias: {
+			'@/lib/utils': path.resolve(__dirname, './src/utils/utils.js'),
+			'@/lib/apiClient': path.resolve(__dirname, './src/services/apiClient.js'),
+			'@/lib/royaltyCalculator': path.resolve(__dirname, './src/utils/royaltyCalculator.js'),
 			'@': path.resolve(__dirname, './src'),
 		},
 	},

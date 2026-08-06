@@ -225,39 +225,62 @@ const HomePage = () => {
         </section>
 
         {/* Footer */}
-        <footer className="bg-white py-16">
-          <motion.div 
+        <footer className="bg-white border-t border-slate-100">
+          <motion.div
             className="container mx-auto px-4"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1 }}
           >
-            <div className="flex flex-col md:flex-row items-center justify-between gap-12 border-t border-slate-100 pt-16">
+            {/* Main Footer Row */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-10 py-14">
+              {/* Brand */}
               <div className="flex items-center gap-4 group">
-                <img 
-                  src="/Black and White Minimalist Elegant Creative Studio Logo.png" 
-                  alt="Literature Chronicle Logo" 
-                  className="h-10 w-auto transition-transform group-hover:rotate-12 rounded-xl"
+                <img
+                  src="/Black and White Minimalist Elegant Creative Studio Logo.png"
+                  alt="Literature Chronicle Logo"
+                  className="h-11 w-auto transition-transform duration-500 group-hover:rotate-12 rounded-xl"
                 />
                 <span className="font-serif font-bold text-2xl tracking-tight text-primary">Literature Chronicle</span>
               </div>
-              
-              <div className="flex gap-8 text-sm font-medium text-muted-foreground font-mono uppercase tracking-widest">
-                <Link to="/" className="hover:text-primary transition-all hover:translate-y-[-2px]">Home</Link>
-                <Link to="/login" className="hover:text-primary transition-all hover:translate-y-[-2px]">Portal</Link>
+
+              {/* Nav Links */}
+              <div className="flex gap-10 text-sm font-bold text-muted-foreground font-mono uppercase tracking-[0.2em]">
+                <Link to="/" className="hover:text-primary transition-colors duration-200">Home</Link>
+                <Link to="/login" className="hover:text-primary transition-colors duration-200">Portal</Link>
               </div>
 
-              <div className="text-right">
-                <p className="text-muted-foreground text-sm font-medium">
+              {/* Copyright */}
+              <div className="text-center md:text-right space-y-1.5">
+                <p className="text-base font-medium text-muted-foreground">
                   © {new Date().getFullYear()} Literature Chronicle Publishing.
                 </p>
-                <p className="text-xs text-muted-foreground/60 mt-1 uppercase tracking-widest font-bold">
+                <p className="text-xs text-muted-foreground/50 uppercase tracking-[0.25em] font-bold">
                   Refining Literary Legacies.
                 </p>
               </div>
             </div>
           </motion.div>
+
+          {/* Credit Strip */}
+          <div className="border-t border-slate-100 bg-slate-50/60">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-center">
+              <a
+                href="https://www.codefusionprojects.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 text-sm text-muted-foreground/70 font-medium tracking-wide hover:text-primary transition-colors duration-300"
+              >
+                Thoughtfully Designed &amp; Developed with{' '}
+                <span className="text-rose-400 text-base group-hover:scale-125 transition-transform duration-300 inline-block">❤️</span>
+                {' '}by{' '}
+                <span className="font-bold text-primary/70 group-hover:text-primary transition-colors duration-300 underline underline-offset-2 decoration-primary/20 group-hover:decoration-primary">
+                  CodeFusionProjects
+                </span>
+              </a>
+            </div>
+          </div>
         </footer>
       </div>
     </>

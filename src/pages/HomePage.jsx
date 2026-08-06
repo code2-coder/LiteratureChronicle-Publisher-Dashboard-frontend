@@ -233,33 +233,100 @@ const HomePage = () => {
             viewport={{ once: true }}
             transition={{ duration: 1 }}
           >
-            {/* Main Footer Row */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-10 py-14">
-              {/* Brand */}
-              <div className="flex items-center gap-4 group">
-                <img
-                  src="/Black and White Minimalist Elegant Creative Studio Logo.png"
-                  alt="Literature Chronicle Logo"
-                  className="h-11 w-auto transition-transform duration-500 group-hover:rotate-12 rounded-xl"
-                />
-                <span className="font-serif font-bold text-2xl tracking-tight text-primary">Literature Chronicle</span>
+            {/* Main Footer Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 py-16">
+
+              {/* Brand Column */}
+              <div className="lg:col-span-1 flex flex-col gap-5">
+                <div className="flex items-center gap-3 group">
+                  <img
+                    src="/Black and White Minimalist Elegant Creative Studio Logo.png"
+                    alt="Literature Chronicle Logo"
+                    className="h-11 w-auto transition-transform duration-500 group-hover:rotate-12 rounded-xl"
+                  />
+                  <span className="font-serif font-bold text-2xl tracking-tight text-primary">Literature Chronicle</span>
+                </div>
+                <p className="text-sm text-muted-foreground/70 font-light leading-relaxed max-w-xs">
+                  A distinguished platform for esteemed authors and publishers to monitor performance and manage their literary portfolios.
+                </p>
+                <div className="mt-1">
+                  <p className="text-base font-medium text-muted-foreground">
+                    © {new Date().getFullYear()} Literature Chronicle Publishing.
+                  </p>
+                  <p className="text-xs text-muted-foreground/45 uppercase tracking-[0.22em] font-bold mt-1">
+                    Refining Literary Legacies.
+                  </p>
+                </div>
               </div>
 
-              {/* Nav Links */}
-              <div className="flex gap-10 text-sm font-bold text-muted-foreground font-mono uppercase tracking-[0.2em]">
-                <Link to="/" className="hover:text-primary transition-colors duration-200">Home</Link>
-                <Link to="/login" className="hover:text-primary transition-colors duration-200">Portal</Link>
+              {/* Platform Column */}
+              <div className="flex flex-col gap-5">
+                <h4 className="text-xs font-bold text-primary uppercase tracking-[0.25em]">Platform</h4>
+                <nav className="flex flex-col gap-3.5">
+                  <Link
+                    to="/"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    Home
+                  </Link>
+                  <a
+                    href="#features"
+                    onClick={e => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit cursor-pointer"
+                  >
+                    Features
+                  </a>
+                  <Link
+                    to="/login"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    Author Portal
+                  </Link>
+                </nav>
               </div>
 
-              {/* Copyright */}
-              <div className="text-center md:text-right space-y-1.5">
-                <p className="text-base font-medium text-muted-foreground">
-                  © {new Date().getFullYear()} Literature Chronicle Publishing.
-                </p>
-                <p className="text-xs text-muted-foreground/50 uppercase tracking-[0.25em] font-bold">
-                  Refining Literary Legacies.
-                </p>
+              {/* Account Column */}
+              <div className="flex flex-col gap-5">
+                <h4 className="text-xs font-bold text-primary uppercase tracking-[0.25em]">Account</h4>
+                <nav className="flex flex-col gap-3.5">
+                  <Link
+                    to="/login"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    Forgot Password
+                  </Link>
+                  <Link
+                    to="/author-dashboard"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    Author Dashboard
+                  </Link>
+                </nav>
               </div>
+
+              {/* Legal Column */}
+              <div className="flex flex-col gap-5">
+                <h4 className="text-xs font-bold text-primary uppercase tracking-[0.25em]">Legal</h4>
+                <nav className="flex flex-col gap-3.5">
+                  <span className="text-sm text-muted-foreground/60 cursor-default">Privacy Policy</span>
+                  <span className="text-sm text-muted-foreground/60 cursor-default">Terms of Service</span>
+                  <a
+                    href="https://www.codefusionprojects.in/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 w-fit"
+                  >
+                    CodeFusionProjects
+                  </a>
+                </nav>
+              </div>
+
             </div>
           </motion.div>
 

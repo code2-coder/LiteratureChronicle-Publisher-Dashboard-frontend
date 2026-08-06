@@ -4,12 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+<<<<<<< HEAD
 import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search, Copy, Check, ChevronsUpDown, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+=======
+import { BookOpen, Edit, Trash2, Plus, X, Image as ImageIcon, Library, ChevronLeft, ChevronRight, Search, Copy, Check, ChevronsUpDown } from 'lucide-react';
+>>>>>>> 255a2ef2ab893b247bdd9162309f8c1c1052527f
 import ImageGallery from '@/components/ImageGallery';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+<<<<<<< HEAD
 import { cn } from '@/utils/utils';
+=======
+import { cn } from '@/lib/utils';
+>>>>>>> 255a2ef2ab893b247bdd9162309f8c1c1052527f
 
 const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState(
@@ -272,7 +280,11 @@ const BookManagementSection = () => {
     setLoading(true);
     try {
       const [bRes, aRes] = await Promise.all([
+<<<<<<< HEAD
         apiClient.get('/books', { params: { limit: 1000, search } }),
+=======
+        apiClient.get('/books', { params: { page, limit: 10, search } }),
+>>>>>>> 255a2ef2ab893b247bdd9162309f8c1c1052527f
         apiClient.get('/auth/authors', { params: { limit: 1000 } })
       ]);
       setBooks(bRes.data.data || bRes.data || []);

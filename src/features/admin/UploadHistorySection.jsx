@@ -58,7 +58,7 @@ const UploadHistorySection = () => {
 
   const fetchAuthorsMap = async () => {
     try {
-      const res = await apiClient.get('/auth/authors');
+      const res = await apiClient.get('/auth/authors', { params: { limit: 1000 } });
       const users = res.data;
       const map = {};
       users.forEach(u => {

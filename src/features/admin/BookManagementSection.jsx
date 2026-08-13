@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/utils/utils';
+import ExportAllDataButton from '@/components/ExportAllDataButton';
 
 const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState(
@@ -54,11 +55,6 @@ const BookForm = ({ initialData, authors, onSuccess, onCancel }) => {
       if (initialData?._id) {
         await apiClient.put(`/books/${initialData._id}`, submitData);
       } else {
-        // Log entries for debugging
-        console.log('--- SUBMITTING BOOK DATA ---');
-        for (let [key, value] of submitData.entries()) {
-          console.log(`${key}:`, value);
-        }
         await apiClient.post('/books', submitData);
       }
       toast({ title: 'Success', description: 'Book saved successfully.' });
@@ -371,7 +367,10 @@ const BookManagementSection = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-primary flex items-center gap-2"><BookOpen className="h-6 w-6" /> Book Catalog</h2>
-        {!isFormOpen && <Button onClick={() => { setEditingBook(null); setIsFormOpen(true); }}><Plus className="h-4 w-4 mr-2" /> Add Book</Button>}
+        <div className="flex items-center gap-2">
+          <ExportAllDataButton />
+          {!isFormOpen && <Button onClick={() => { setEditingBook(null); setIsFormOpen(true); }}><Plus className="h-4 w-4 mr-2" /> Add Book</Button>}
+        </div>
       </div>
 
       {isFormOpen && <BookForm initialData={editingBook} authors={authors} onSuccess={() => { setIsFormOpen(false); fetchData(); }} onCancel={() => setIsFormOpen(false)} />}

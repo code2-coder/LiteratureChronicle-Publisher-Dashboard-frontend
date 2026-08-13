@@ -4,11 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext.jsx';
 import { Button } from '@/components/ui/button';
 import { LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import NotificationBar from './NotificationBar.jsx';
 
 const Header = () => {
   const { currentUser, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    toast({ title: 'Logged Out', description: 'You have been successfully signed out.' });
+  };
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -50,7 +57,7 @@ const Header = () => {
               ))}
 
               {isAuthenticated ? (
-                <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full px-6 transition-all">
+                <Button onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full px-6 transition-all">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
@@ -109,7 +116,7 @@ const Header = () => {
                   
                   {isAuthenticated ? (
                     <Button 
-                      onClick={() => { logout(); setIsMenuOpen(false); }} 
+                      onClick={() => { handleLogout(); setIsMenuOpen(false); }} 
                       variant="outline" 
                       className="w-full py-7 rounded-2xl border-primary/10 text-primary font-bold text-lg"
                     >

@@ -344,6 +344,18 @@ export default defineConfig({
 			output: {
 				manualChunks: (id) => {
 					if (id.includes('node_modules')) {
+						if (id.includes('xlsx')) {
+							return 'xlsx';
+						}
+						if (id.includes('recharts')) {
+							return 'recharts';
+						}
+						if (id.includes('framer-motion')) {
+							return 'framer-motion';
+						}
+						if (id.includes('lucide-react')) {
+							return 'lucide-react';
+						}
 						return 'vendor';
 					}
 				},

@@ -18,7 +18,15 @@ export default [
 			react: { version: 'detect' },
 			'import/resolver': {
 				node: { extensions: ['.js', '.jsx'] },
-				alias: { map: [['@', './src']], extensions: ['.js', '.jsx'] },
+				alias: {
+					map: [
+						['@/lib/utils', './src/utils/utils.js'],
+						['@/lib/apiClient', './src/services/apiClient.js'],
+						['@/lib/royaltyCalculator', './src/utils/royaltyCalculator.js'],
+						['@', './src']
+					],
+					extensions: ['.js', '.jsx']
+				},
 			},
 		},
 		rules: {

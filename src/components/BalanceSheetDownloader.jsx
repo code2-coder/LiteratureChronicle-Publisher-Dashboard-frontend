@@ -5,12 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const BalanceSheetDownloader = ({ authorsData }) => {
   const [threshold, setThreshold] = useState(0);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleDownload = () => {
     let filteredData = authorsData.filter(a => a.balance >= threshold);
@@ -37,6 +39,7 @@ const BalanceSheetDownloader = ({ authorsData }) => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Balance Sheet');
     XLSX.writeFile(wb, `Balance_Sheet_${new Date().toISOString().split('T')[0]}.xlsx`);
+    toast({ title: 'Export Complete', description: 'Balance sheet downloaded successfully.' });
     setIsOpen(false);
   };
 

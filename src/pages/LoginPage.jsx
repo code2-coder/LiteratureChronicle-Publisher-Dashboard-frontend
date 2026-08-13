@@ -19,7 +19,8 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
+      const user = await login(email, password);
+      toast({ title: 'Welcome Back!', description: `Successfully signed in as ${user.name || 'user'}.` });
     } catch (err) {
       toast({ title: 'Login Failed', description: err.response?.data?.message || 'Invalid credentials.', variant: 'destructive' });
     } finally {

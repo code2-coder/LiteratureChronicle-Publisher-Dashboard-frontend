@@ -452,7 +452,7 @@ const UploadHistorySection = () => {
             )}
             <Input
               id="sales-search-input"
-              placeholder={activeTab === 'sales' ? "Search title, ISBN, order ID..." : "Search author name or contact..."}
+              placeholder={activeTab === 'sales' ? "Search title, author, ISBN, order ID..." : "Search author name or contact..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-9 h-10 bg-background border-border/70"

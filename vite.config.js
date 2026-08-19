@@ -280,6 +280,7 @@ logger.error = (msg, options) => {
 }
 
 export default defineConfig({
+	clearScreen: false,
 	root: path.resolve(__dirname),
 	customLogger: logger,
 	plugins: [

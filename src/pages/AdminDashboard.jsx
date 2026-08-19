@@ -6,13 +6,14 @@ import AuthorForm from '@/components/AuthorForm.jsx';
 import FileUploadModal from '@/components/FileUploadModal.jsx';
 const BookManagementSection = React.lazy(() => import('@/features/admin/BookManagementSection.jsx'));
 const AuthorManagementSection = React.lazy(() => import('@/features/admin/AuthorManagementSection.jsx'));
+const RoyaltyPendingSection = React.lazy(() => import('@/features/admin/RoyaltyPendingSection.jsx'));
 const PlatformManagementSection = React.lazy(() => import('@/features/admin/PlatformManagementSection.jsx'));
 const WithdrawalManagementSection = React.lazy(() => import('@/features/admin/WithdrawalManagementSection.jsx'));
 const UploadHistorySection = React.lazy(() => import('@/features/admin/UploadHistorySection.jsx'));
 import ExcelTemplateDownloader from '@/components/ExcelTemplateDownloader.jsx';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Users, TrendingUp, DollarSign, BookOpen, Server, History, ChevronRight } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, BookOpen, Server, History, ChevronRight, WalletCards } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [showAuthorForm, setShowAuthorForm] = useState(false);
@@ -125,6 +126,7 @@ const AdminDashboard = () => {
                   {[
                     { id: 'books', label: 'Books', icon: BookOpen },
                     { id: 'authors', label: 'Authors', icon: Users },
+                    { id: 'royalty-pending', label: 'Royalty Pending', icon: WalletCards },
                     { id: 'platforms', label: 'Platforms', icon: Server },
                     { id: 'withdrawals', label: 'Withdrawals', icon: DollarSign },
                     { id: 'history', label: 'History', icon: History },
@@ -174,6 +176,7 @@ const AdminDashboard = () => {
                   }>
                     {activeTab === 'books' && <BookManagementSection />}
                     {activeTab === 'authors' && <AuthorManagementSection />}
+                    {activeTab === 'royalty-pending' && <RoyaltyPendingSection />}
                     {activeTab === 'platforms' && <PlatformManagementSection />}
                     {activeTab === 'withdrawals' && <WithdrawalManagementSection />}
                     {activeTab === 'history' && <UploadHistorySection />}
